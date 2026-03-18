@@ -50,9 +50,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_65FA437594664C4989E154E240EA26DB }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_91762E850A114853B35BCCF5171BF1F8 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_7927FA78B4FC4D3BBF5E84E8F04C9804 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_2B3968A1677146E48A63083965AFCEC2 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_28EBAB67FC164E9A8F46C0CB379878A2 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E0FB67353BD541A1A3E4C5A1AAF2DA33 }}
 
       - name: Deploy static files
         uses: azure/webapps-deploy@v3
