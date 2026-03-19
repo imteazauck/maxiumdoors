@@ -27,11 +27,16 @@ jobs:
       - name: Build app
         run: npm run build
 
-      - name: Upload dist only
+      - name: Verify build output
+        run: |
+          ls -la ./dist
+          find ./dist -maxdepth 2 -type f
+
+      - name: Upload dist
         uses: actions/upload-artifact@v4
         with:
           name: site
-          path: ./dist/*
+          path: ./dist
 
   deploy:
     runs-on: ubuntu-latest
@@ -45,7 +50,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: site
-          path: ./dist
+          path: .
+
+      - name: Verify downloaded artifact
+        run: |
+          ls -la ./dist
+          find ./dist -maxdepth 2 -type f
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -57,6 +67,6 @@ jobs:
       - name: Deploy static files
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'maxiumdoors'
-          slot-name: 'Production'
+          app-name: maxiumdoors
+          slot-name: Production
           package: ./dist
