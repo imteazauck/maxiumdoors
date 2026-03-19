@@ -9,12 +9,24 @@ type CartItem = {
   unitPrice: number;
   quantity: number;
   colour?: string;
+  quoteRef?: string;
+  doorRef?: string;
+  details?: string[];
 };
 
 type AddToCartInput = {
   product: Product;
   quantity?: number;
   colour?: string;
+};
+
+type AddConfiguredItemInput = {
+  quoteRef: string;
+  doorRef: string;
+  name: string;
+  unitPrice: number;
+  quantity?: number;
+  details?: string[];
 };
 
 type CartContextValue = {
@@ -25,6 +37,7 @@ type CartContextValue = {
   openBasket: () => void;
   closeBasket: () => void;
   addItem: (input: AddToCartInput) => void;
+  addConfiguredItem: (input: AddConfiguredItemInput) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
 };
@@ -66,6 +79,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setIsBasketOpen(true);
   }
 
+  function addConfiguredItem({
+    quoteRef,
+    doorRef,
+    name,
+    unitPrice,
+    quantity = 1,
+    details = [],
+  }: AddConfiguredItemInput) {
+    setItems((current) => [
+      ...current,
+      {
+        id: `${doorRef}-${Date.now()}`,
+        productId: doorRef,
+        name,
+        priceLabel: formatMoney(unitPrice),
+        unitPrice,
+        quantity,
+        quoteRef,
+        doorRef,
+        details,
+      },
+    ]);
+    setIsBasketOpen(true);
+  }
+
   function removeItem(id: string) {
     setItems((current) => current.filter((item) => item.id !== id));
   }
@@ -93,12 +131,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
       openBasket: () => setIsBasketOpen(true),
       closeBasket: () => setIsBasketOpen(false),
       addItem,
+      addConfiguredItem,
       removeItem,
       updateQuantity,
     };
   }, [isBasketOpen, items]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
+
+function formatMoney(value: number) {
+  return `£${value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export function useCart() {

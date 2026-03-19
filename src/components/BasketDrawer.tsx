@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 function formatMoney(value: number) {
@@ -64,6 +65,11 @@ export default function BasketDrawer() {
                       {item.colour && (
                         <p className="mt-1 text-sm text-zinc-600">Colour: {item.colour}</p>
                       )}
+                      {item.quoteRef && (
+                        <p className="mt-1 text-xs font-medium uppercase tracking-[0.18em] text-zinc-500">
+                          {item.quoteRef} · {item.doorRef}
+                        </p>
+                      )}
                     </div>
                     <button
                       onClick={() => removeItem(item.id)}
@@ -72,6 +78,14 @@ export default function BasketDrawer() {
                       Remove
                     </button>
                   </div>
+
+                  {item.details && item.details.length > 0 && (
+                    <div className="mt-3 space-y-1 text-xs leading-5 text-zinc-500">
+                      {item.details.map((detail) => (
+                        <p key={detail}>{detail}</p>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="mt-4 flex items-center justify-between gap-4">
                     <div className="flex items-center rounded-full border border-zinc-300 bg-white">
@@ -108,11 +122,11 @@ export default function BasketDrawer() {
             <span className="text-lg font-semibold text-zinc-900">{formatMoney(subtotal)}</span>
           </div>
 
-          <button className="mt-4 w-full rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90">
-            Proceed to checkout
-          </button>
+          <Link to="/order-online/summary" onClick={closeBasket} className="mt-4 block w-full rounded-full bg-black px-6 py-3 text-center text-sm font-semibold text-white transition hover:opacity-90">
+            Review quote
+          </Link>
           <p className="mt-3 text-xs leading-5 text-zinc-500">
-            This basket is ready for a later database-backed checkout and order flow.
+            This basket supports both standard products and configured MultiDor quote items.
           </p>
         </div>
       </aside>
