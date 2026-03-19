@@ -1,17 +1,23 @@
 import type { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
 import BasketDrawer from "./BasketDrawer";
 import { useCart } from "../context/CartContext";
-import { ShoppingCart } from "lucide-react";
+
+type NavLinkProps = {
+  isActive: boolean;
+};
 
 export default function SiteShell({ children }: { children: ReactNode }) {
   const { itemCount, openBasket } = useCart();
 
-  // const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  //   [
-  //     "transition",
-  //     isActive ? "text-[#40584A]" : "text-[#4B4F4C] hover:text-[#40584A]",
-  //   ].join(" ");
+  const navLinkClass = ({ isActive }: NavLinkProps) =>
+    [
+      "rounded-full px-3 py-2 text-sm font-medium transition-colors",
+      isActive
+        ? "text-[#40584A]"
+        : "text-[#4B4F4C] hover:text-[#40584A]",
+    ].join(" ");
 
   return (
     <div className="min-h-screen bg-white text-[#4B4F4C]">
@@ -34,18 +40,17 @@ export default function SiteShell({ children }: { children: ReactNode }) {
             </p>
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-medium lg:flex">
-            <NavLink to="/" className="rounded-2xl relative flex items-center jusify-center p-2 text-[#40584A] transition hover:bg-[#070707]">
+          <nav className="hidden items-center gap-4 lg:flex">
+            <NavLink to="/" className={navLinkClass}>
               Home
             </NavLink>
-            <NavLink to="/shop" className="rounded-2xl relative flex items-center jusify-center p-2 text-[#40584A] transition hover:bg-[#070707]">
+            <NavLink to="/doors" className={navLinkClass}>
               Doors
             </NavLink>
-            <NavLink to="/help-centre" className="rounded-2xl relative flex items-center jusify-center p-2 text-[#40584A] transition hover:bg-[#070707]">
+            <NavLink to="/help-centre" className={navLinkClass}>
               Help Centre
             </NavLink>
-            
-            <NavLink to="/contact" className="rounded-2xl relative flex items-center justify-center p-2 text-[#40584A] transition hover:bg-[#070707]">            
+            <NavLink to="/contact" className={navLinkClass}>
               Contact
             </NavLink>
           </nav>
@@ -53,21 +58,25 @@ export default function SiteShell({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-3">
             <NavLink
               to="/order-online"
-              className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90">
+              className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+            >
               Order Online
             </NavLink>
-          <button
-            onClick={openBasket}
-            className="relative flex items-center justify-center p-2 text-[#40584A] transition hover:bg-[#070707]"
-          >
-            <ShoppingCart size={22} strokeWidth={1.8} />
 
-            {itemCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[#40584A] px-1 text-xs text-white">
-                {itemCount}
-              </span>
-            )}
-          </button>
+            <button
+              type="button"
+              onClick={openBasket}
+              aria-label="Open basket"
+              className="relative flex items-center justify-center p-2 text-[#40584A] transition hover:text-[#5F7C6A]"
+            >
+              <ShoppingCart size={22} strokeWidth={1.8} />
+
+              {itemCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[#40584A] px-1 text-xs text-white">
+                  {itemCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </header>
@@ -82,8 +91,8 @@ export default function SiteShell({ children }: { children: ReactNode }) {
               Trade Steel Doors
             </p>
             <p className="mt-4 max-w-sm text-sm leading-6 text-[#4B4F4C]">
-              Quality steel and aluminium doors for commercial and industrial applications.
-
+              Quality steel and aluminium doors for commercial and industrial
+              applications.
             </p>
           </div>
 
@@ -91,13 +100,13 @@ export default function SiteShell({ children }: { children: ReactNode }) {
             <h3 className="text-sm font-semibold text-[#40584A]">Browse</h3>
             <div className="mt-4 space-y-2 text-sm text-[#4B4F4C]">
               <div>
-                <Link to="/shop" className="transition hover:text-[#40584A]">
+                <Link to="/doors" className="transition hover:text-[#40584A]">
                   All doors
                 </Link>
               </div>
               <div>
                 <Link
-                  to="/product/double-door-f3"
+                  to="/doors/double-door-f3"
                   className="transition hover:text-[#40584A]"
                 >
                   Double Door (F3)
@@ -105,7 +114,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
               </div>
               <div>
                 <Link
-                  to="/product/single-door-f4"
+                  to="/doors/single-door-f4"
                   className="transition hover:text-[#40584A]"
                 >
                   Single Door (F4)
