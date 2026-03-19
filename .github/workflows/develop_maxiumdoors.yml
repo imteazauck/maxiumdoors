@@ -31,14 +31,13 @@ jobs:
         run: |
           pwd
           ls -la
-          ls -la dist
-          find dist -maxdepth 2 -type f
+          find dist -maxdepth 3 -type f
 
-      - name: Upload dist
+      - name: Upload dist folder
         uses: actions/upload-artifact@v4
         with:
           name: site
-          path: dist
+          path: dist/
 
   deploy:
     runs-on: ubuntu-latest
@@ -52,14 +51,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: site
-          path: site
+          path: .
 
-      - name: Verify downloaded artifact
+      - name: Inspect downloaded files
         run: |
           pwd
           ls -la
-          ls -la site
-          find site -maxdepth 3 -type f
+          find . -maxdepth 4 -type f
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -73,4 +71,4 @@ jobs:
         with:
           app-name: maxiumdoors
           slot-name: Production
-          package: site/dist
+          package: .
