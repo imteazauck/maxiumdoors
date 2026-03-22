@@ -25,8 +25,8 @@ type AddConfiguredItemInput = {
   doorRef: string;
   name: string;
   unitPrice: number;
-  quantity?: number;
-  details?: string[];
+  quantity: number;
+  details: string[];
 };
 
 type CartContextValue = {
@@ -50,15 +50,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   function addItem({ product, quantity = 1, colour }: AddToCartInput) {
     setItems((current) => {
-      const existing = current.find(
-        (item) => item.productId === product.id && item.colour === colour
-      );
-
+      const existing = current.find((item) => item.productId === product.id && item.colour === colour);
       if (existing) {
         return current.map((item) =>
-          item.id === existing.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+          item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item,
         );
       }
 
@@ -75,25 +70,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
         },
       ];
     });
-
     setIsBasketOpen(true);
   }
 
-  function addConfiguredItem({
-    quoteRef,
-    doorRef,
-    name,
-    unitPrice,
-    quantity = 1,
-    details = [],
-  }: AddConfiguredItemInput) {
+  function addConfiguredItem({ quoteRef, doorRef, name, unitPrice, quantity, details }: AddConfiguredItemInput) {
     setItems((current) => [
       ...current,
       {
-        id: `${doorRef}-${Date.now()}`,
-        productId: doorRef,
+        id: `${quoteRef}-${doorRef}-${crypto.randomUUID()}`,
+        productId: "configured-door",
         name,
-        priceLabel: formatMoney(unitPrice),
+        priceLabel: `£${unitPrice.toFixed(2)}`,
         unitPrice,
         quantity,
         quoteRef,
@@ -113,10 +100,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       removeItem(id);
       return;
     }
-
-    setItems((current) =>
-      current.map((item) => (item.id === id ? { ...item, quantity } : item))
-    );
+    setItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)));
   }
 
   const value = useMemo(() => {
@@ -140,19 +124,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-function formatMoney(value: number) {
-  return `£${value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
 export function useCart() {
   const context = useContext(CartContext);
-
   if (!context) {
     throw new Error("useCart must be used within a CartProvider");
   }
-
   return context;
 }

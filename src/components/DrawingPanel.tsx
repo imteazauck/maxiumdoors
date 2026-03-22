@@ -1,5 +1,28 @@
 import type { ConfigSelections } from "../services/mockConfiguratorApi";
 
+function humanize(value?: string) {
+  if (!value) return "";
+  return value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function previewBorder(colour?: string) {
+  switch (colour) {
+    case "red":
+      return "#b91c1c";
+    case "blue":
+      return "#1d4ed8";
+    case "green":
+      return "#166534";
+    case "black":
+      return "#111827";
+    default:
+      return "#F47A20";
+  }
+}
+
 export default function DrawingPanel({
   selections,
   drawingLabel,
@@ -7,61 +30,53 @@ export default function DrawingPanel({
   selections: ConfigSelections;
   drawingLabel: string;
 }) {
-  const isDouble = selections.doorType?.includes("double");
-  const isVision = selections.doorType?.includes("vision");
-  const isLouvre = selections.doorType?.includes("louvre");
+  const borderColour = previewBorder(selections.colour);
 
   return (
-    <div className="rounded-[2rem] border border-[#DCE5DD] bg-[#F8FAF8] p-6 shadow-sm">
-      <div className="flex items-center justify-between gap-4">
+    <div className="rounded-[2rem] border border-[#D7D7D7] bg-white p-6 shadow-sm sm:p-8">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8A908C]">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">
             Live drawing
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-[#40584A]">Configuration preview</h2>
+          <h2 className="mt-2 text-2xl font-semibold text-[#111111]">
+            Preview panel
+          </h2>
+        </div>
+        <button
+          type="button"
+          className="rounded-full border border-[#F47A20] px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#F47A20] transition hover:bg-[#FFF1E6]"
+        >
+          Zoom
+        </button>
+      </div>
+
+      <div className="mt-6 rounded-[1.75rem] bg-[#FFF9F4] p-4">
+        <div
+          className="flex min-h-[420px] items-center justify-center rounded-[1.5rem] bg-white p-6"
+          style={{ border: `6px solid ${borderColour}` }}
+        >
+          <div className="relative flex h-[360px] w-[240px] items-center justify-center rounded-[0.5rem] border-2 border-[#B8B8B8] bg-[#FFF9F4]">
+            <div className="absolute inset-y-0 left-2 border-l border-dashed border-[#B8B8B8]" />
+            <div className="absolute inset-y-0 right-2 border-l border-dashed border-[#B8B8B8]" />
+            <div className="absolute bottom-10 right-5 flex items-center gap-2">
+              <div className="h-[2px] w-7 bg-[#7B847E]" />
+              <div className="h-3 w-3 rounded-full border border-[#7B847E]" />
+            </div>
+            <div className="absolute inset-6 border border-[#E6DDD4]" />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,transparent_49.5%,#EBD7C8_50%,transparent_50.5%)] opacity-70" />
+            <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-[#FFF8F2]/95 px-3 py-2 text-center text-xs font-medium text-[#111111] shadow-sm">
+              {humanize(selections.leafType) || "Door leaf"}
+              {selections.handing ? ` · ${humanize(selections.handing)}` : ""}
+              {selections.colour ? ` · ${humanize(selections.colour)}` : ""}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-[#DCE5DD] bg-white p-6">
-        <svg viewBox="0 0 360 440" className="mx-auto h-auto w-full max-w-[22rem]">
-          <rect x="40" y="20" width="280" height="390" rx="8" fill="#e8eeea" stroke="#40584A" strokeWidth="8" />
-          {isDouble ? (
-            <>
-              <rect x="62" y="42" width="114" height="346" fill="#f8fbf8" stroke="#40584A" strokeWidth="6" />
-              <rect x="184" y="42" width="114" height="346" fill="#f8fbf8" stroke="#40584A" strokeWidth="6" />
-              <line x1="180" y1="42" x2="180" y2="388" stroke="#40584A" strokeWidth="4" />
-            </>
-          ) : (
-            <rect x="72" y="42" width="216" height="346" fill="#f8fbf8" stroke="#40584A" strokeWidth="6" />
-          )}
-
-          {isVision && (
-            <rect x={isDouble ? 88 : 102} y="88" width={isDouble ? 184 : 156} height="96" fill="#dce8ef" stroke="#40584A" strokeWidth="5" />
-          )}
-
-          {isLouvre && (
-            <>
-              {[0, 1, 2, 3, 4].map((row) => (
-                <line
-                  key={row}
-                  x1={isDouble ? 88 : 106}
-                  y1={124 + row * 28}
-                  x2={isDouble ? 272 : 254}
-                  y2={124 + row * 28}
-                  stroke="#7c8f82"
-                  strokeWidth="8"
-                />
-              ))}
-            </>
-          )}
-
-          <circle cx={isDouble ? 164 : 264} cy="212" r="6" fill="#40584A" />
-          {isDouble && <circle cx="196" cy="212" r="6" fill="#40584A" />}
-        </svg>
-      </div>
-
-      <div className="mt-4 rounded-[1.25rem] bg-white px-4 py-3 text-sm text-[#4B4F4C]">
-        {drawingLabel}
+      <div className="mt-6 rounded-[1.5rem] border border-[#D7D7D7] bg-[#FFF9F4] p-5 ring-1 ring-[#F47A20]/10">
+        <p className="text-sm font-semibold text-[#111111]">Preview status</p>
+        <p className="mt-2 text-sm leading-6 text-[#2A2A2A]">{drawingLabel}</p>
       </div>
     </div>
   );

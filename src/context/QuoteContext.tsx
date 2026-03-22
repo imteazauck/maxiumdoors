@@ -67,9 +67,7 @@ export function QuoteProvider({ children }: { children: ReactNode }) {
 
   function doorRefExists(doorRef: string) {
     const normalized = doorRef.trim().toLowerCase();
-    return doors.some(
-      (door) => door.doorRef.trim().toLowerCase() === normalized
-    );
+    return doors.some((door) => door.doorRef.trim().toLowerCase() === normalized);
   }
 
   function resetQuote() {
@@ -79,17 +77,8 @@ export function QuoteProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo(
-    () => ({
-      quoteRef,
-      customerDetails,
-      doors,
-      startQuote,
-      addDoor,
-      removeDoor,
-      doorRefExists,
-      resetQuote,
-    }),
-    [quoteRef, customerDetails, doors]
+    () => ({ quoteRef, customerDetails, doors, startQuote, addDoor, removeDoor, doorRefExists, resetQuote }),
+    [quoteRef, customerDetails, doors],
   );
 
   return <QuoteContext.Provider value={value}>{children}</QuoteContext.Provider>;
