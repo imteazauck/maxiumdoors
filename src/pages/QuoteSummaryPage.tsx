@@ -1,56 +1,66 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
 
 function formatMoney(value: number) {
-  return `£${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `£${value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export default function QuoteSummaryPage() {
   const { quoteRef, customerDetails, doors, removeDoor } = useQuote();
+  const { items, subtotal } = useCart();
 
-  const total = doors.reduce((sum, door) => sum + door.unitPrice * door.quantity, 0);
+  if (!customerDetails) {
+    return <Navigate to="/order-online" replace />;
+  }
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8A908C]">Quote summary</p>
-          <h1 className="mt-2 text-3xl font-semibold text-[#40584A]">{quoteRef}</h1>
-          {customerDetails && (
-            <p className="mt-3 text-sm text-[#4B4F4C]">
-              {customerDetails.customerName} · {customerDetails.addressLine1}, {customerDetails.city}, {customerDetails.postcode}
-            </p>
-          )}
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">Quote summary</p>
+          <h1 className="mt-2 text-4xl font-semibold text-[#111111]">{quoteRef}</h1>
+          <p className="mt-2 text-sm text-[#2A2A2A]">
+            {customerDetails.customerName} · {customerDetails.addressLine1}, {customerDetails.city}
+          </p>
         </div>
-        <Link to="/order-online/configure" className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90">
+        <Link to="/order-online/configure" className="rounded-full bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]">
           Add another door
         </Link>
       </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="space-y-4">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="space-y-5">
           {doors.length === 0 ? (
-            <div className="rounded-[2rem] border border-[#DCE5DD] bg-[#F8FAF8] p-8 text-sm text-[#4B4F4C]">
-              No configured doors have been added yet.
+            <div className="rounded-[2rem] border border-[#D7D7D7] bg-white p-8 shadow-sm">
+              <p className="text-lg font-semibold text-[#111111]">No doors added yet</p>
+              <p className="mt-2 text-sm text-[#2A2A2A]">Build your first door configuration to start the quote.</p>
             </div>
           ) : (
             doors.map((door) => (
-              <article key={door.doorRef} className="rounded-[2rem] border border-[#DCE5DD] bg-white p-6 shadow-sm">
+              <article key={door.doorRef} className="rounded-[2rem] border border-[#D7D7D7] bg-white p-6 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8A908C]">{door.doorRef}</p>
-                    <h2 className="mt-2 text-2xl font-semibold text-[#40584A]">{door.title}</h2>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6B6B6B]">Door reference</p>
+                    <h2 className="mt-2 text-2xl font-semibold text-[#111111]">{door.doorRef}</h2>
+                    <p className="mt-1 text-sm text-[#2A2A2A]">{door.title}</p>
                   </div>
-                  <button onClick={() => removeDoor(door.doorRef)} className="text-sm font-medium text-[#8A908C] transition hover:text-[#40584A]">
-                    Remove
-                  </button>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-[#F47A20]">{formatMoney(door.unitPrice * door.quantity)}</p>
+                    <button type="button" onClick={() => removeDoor(door.doorRef)} className="mt-3 text-sm font-medium text-[#6B6B6B] transition hover:text-[#F47A20]">
+                      Remove
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
                   {Object.entries(door.selections).map(([key, value]) => (
-                    <div key={key} className="rounded-[1rem] bg-[#F8FAF8] px-4 py-3 text-sm text-[#4B4F4C]">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A908C]">{key.replace(/([A-Z])/g, " $1")}</p>
-                      <p className="mt-1 font-medium text-[#40584A]">{value}</p>
+                    <div key={key} className="rounded-[1rem] bg-[#FFF9F4] px-4 py-3 text-sm text-[#2A2A2A]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6B6B6B]">{key.replace(/([A-Z])/g, " $1")}</p>
+                      <p className="mt-1 font-medium text-[#111111]">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -59,21 +69,23 @@ export default function QuoteSummaryPage() {
           )}
         </div>
 
-        <aside className="rounded-[2rem] border border-[#DCE5DD] bg-[#F8FAF8] p-6">
-          <h2 className="text-xl font-semibold text-[#40584A]">Quote totals</h2>
-          <div className="mt-6 flex items-center justify-between text-sm text-[#4B4F4C]">
-            <span>Configured doors</span>
-            <span>{doors.length}</span>
+        <aside className="rounded-[2rem] border border-[#D7D7D7] bg-white p-6 shadow-sm h-fit">
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6B6B6B]">Basket summary</p>
+          <h2 className="mt-2 text-2xl font-semibold text-[#111111]">Current quote</h2>
+          <div className="mt-6 space-y-4">
+            {items.map((item) => (
+              <div key={item.id} className="rounded-[1rem] border border-[#D7D7D7] bg-[#FFF9F4] px-4 py-3">
+                <p className="font-medium text-[#111111]">{item.name}</p>
+                {item.doorRef && <p className="mt-1 text-sm text-[#2A2A2A]">Door Ref: {item.doorRef}</p>}
+                <p className="mt-2 text-sm text-[#2A2A2A]">{formatMoney(item.unitPrice * item.quantity)}</p>
+              </div>
+            ))}
           </div>
-          <div className="mt-3 flex items-center justify-between text-sm text-[#4B4F4C]">
-            <span>Total quantity</span>
-            <span>{doors.reduce((sum, door) => sum + door.quantity, 0)}</span>
+
+          <div className="mt-6 border-t border-[#D7D7D7] pt-5 flex items-center justify-between">
+            <span className="text-sm font-semibold text-[#111111]">Subtotal</span>
+            <span className="text-xl font-semibold text-[#F47A20]">{formatMoney(subtotal)}</span>
           </div>
-          <div className="mt-6 flex items-center justify-between border-t border-[#DCE5DD] pt-6">
-            <span className="text-sm font-medium text-[#4B4F4C]">Subtotal</span>
-            <span className="text-2xl font-semibold text-[#40584A]">{formatMoney(total)}</span>
-          </div>
-          <p className="mt-4 text-xs leading-6 text-[#8A908C]">Delivery, payment and PDF confirmation can be added after the configurator flow is approved.</p>
         </aside>
       </div>
     </section>

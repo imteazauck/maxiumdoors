@@ -14,9 +14,27 @@ import {
 const initialState: ConfiguratorResponse = {
   visibleFields: [],
   isComplete: false,
-  unitPrice: 695,
-  drawingLabel: "Choose a door type to begin the drawing preview.",
+  unitPrice: 0,
+  drawingLabel: "Enter the door reference, then choose a leaf type to begin the drawing preview.",
   technicalNotes: [],
+};
+
+const colourSwatches: Record<string, string> = {
+  grey: "#7A7A7A",
+  black: "#111111",
+  red: "#B64926",
+  blue: "#2C5F8A",
+  green: "#4C6B43",
+};
+
+const summaryLabels: Partial<Record<ConfigFieldKey, string>> = {
+  leafType: "Leaf Type",
+  handing: "Door Handing",
+  structuralHeight: "Structural Opening Height",
+  structuralWidth: "Structural Opening Width",
+  doorType: "Door Type",
+  lockType: "Lock Type",
+  colour: "Colour",
 };
 
 function formatMoney(value: number) {
@@ -43,7 +61,7 @@ export default function ConfiguratorPage() {
   const [selections, setSelections] = useState<ConfigSelections>({});
   const [state, setState] = useState<ConfiguratorResponse>(initialState);
   const [quantity, setQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [addedDoor, setAddedDoor] = useState<ConfiguredDoor | null>(null);
 
   const trimmedDoorRef = doorRef.trim();
@@ -76,44 +94,45 @@ export default function ConfiguratorPage() {
   const selectionSummary = useMemo(
     () =>
       Object.fromEntries(
-        Object.entries(selections).map(([key, value]) => [key, humanize(value)])
+        Object.entries(selections).map(([key, value]) => [key, humanize(value)]),
       ),
-    [selections]
+    [selections],
   );
 
   if (!customerDetails) {
     return <Navigate to="/order-online" replace />;
   }
 
-  function handleSelection(key: ConfigFieldKey, value: string) {
+  function resetFollowingFields(startKey: ConfigFieldKey, nextValue: string) {
     const order: ConfigFieldKey[] = [
-      "doorType",
+      "leafType",
       "handing",
-      "height",
-      "widthBand",
-      "exactWidth",
+      "structuralHeight",
+      "structuralWidth",
+      "doorType",
       "lockType",
       "colour",
     ];
 
-    const keyIndex = order.indexOf(key);
-    const nextEntries = Object.entries(selections).filter(
-      ([entryKey]) => order.indexOf(entryKey as ConfigFieldKey) < keyIndex
+    const keyIndex = order.indexOf(startKey);
+    const retainedEntries = Object.entries(selections).filter(
+      ([entryKey]) => order.indexOf(entryKey as ConfigFieldKey) < keyIndex,
     );
 
     setSelections({
-      ...Object.fromEntries(nextEntries),
-      [key]: value,
+      ...Object.fromEntries(retainedEntries),
+      [startKey]: nextValue,
     });
+  }
+
+  function handleSelection(key: ConfigFieldKey, value: string) {
+    resetFollowingFields(key, value);
   }
 
   function handleDoorRefChange(value: string) {
     setDoorRef(value);
     if (doorRefError) {
       setDoorRefError("");
-    }
-    if (Object.keys(selections).length > 0) {
-      setSelections({});
     }
   }
 
@@ -132,7 +151,7 @@ export default function ConfiguratorPage() {
 
     const door = addDoor({
       doorRef: trimmedDoorRef,
-      title: humanize(selections.doorType) || "Configured door",
+      title: humanize(selections.leafType) || "Configured door",
       selections: selectionSummary,
       unitPrice: state.unitPrice,
       quantity,
@@ -146,7 +165,7 @@ export default function ConfiguratorPage() {
       unitPrice: door.unitPrice,
       quantity: door.quantity,
       details: Object.entries(door.selections).map(
-        ([key, value]) => `${key.replace(/([A-Z])/g, " $1")}: ${value}`
+        ([key, value]) => `${summaryLabels[key as ConfigFieldKey] ?? key}: ${value}`,
       ),
     });
 
@@ -161,13 +180,11 @@ export default function ConfiguratorPage() {
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8A908C]">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">
             Quote reference
           </p>
-          <h1 className="mt-2 text-3xl font-semibold text-[#40584A]">
-            {quoteRef}
-          </h1>
-          <p className="mt-2 text-sm text-[#4B4F4C]">
+          <h1 className="mt-2 text-3xl font-semibold text-[#111111]">{quoteRef}</h1>
+          <p className="mt-2 text-sm text-[#2A2A2A]">
             Customer: {customerDetails.customerName}
             {trimmedDoorRef ? ` · Door Ref: ${trimmedDoorRef}` : ""}
           </p>
@@ -175,132 +192,150 @@ export default function ConfiguratorPage() {
 
         <Link
           to="/order-online/summary"
-          className="rounded-full border border-[#DCE5DD] px-5 py-3 text-sm font-semibold text-[#40584A] transition hover:bg-[#F5F7F5]"
+          className="rounded-full border border-[#D7D7D7] px-5 py-3 text-sm font-semibold text-[#111111] transition hover:bg-[#FFF6EE]"
         >
           View quote summary
         </Link>
       </div>
 
       <div className="grid gap-8 items-start lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <DrawingPanel
-          selections={selections}
-          drawingLabel={state.drawingLabel}
-        />
+        <DrawingPanel selections={selections} drawingLabel={state.drawingLabel} />
 
-        <div className="rounded-[2rem] border border-[#DCE5DD] bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-[2rem] border border-[#D7D7D7] bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8A908C]">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">
                 MultiDor configurator
               </p>
-              <h2 className="mt-2 text-3xl font-semibold text-[#40584A]">
-                Build your door
-              </h2>
+              <h2 className="mt-2 text-3xl font-semibold text-[#111111]">Build your door</h2>
             </div>
 
-            <div className="rounded-[1.25rem] bg-[#F8FAF8] px-4 py-3 text-right">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#8A908C]">
+            <div className="rounded-[1.25rem] bg-[#FFF9F4] px-4 py-3 text-right">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6B6B6B]">
                 Live price
               </p>
-              <p className="mt-1 text-2xl font-semibold text-[#40584A]">
-                {formatMoney(state.unitPrice)}
+              <p className="mt-1 text-2xl font-semibold text-[#F47A20]">
+                {state.unitPrice > 0 ? formatMoney(state.unitPrice) : "—"}
               </p>
             </div>
           </div>
 
           <div className="mt-8 space-y-5">
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-[#40584A]">
-                Door Reference
-              </span>
+              <span className="mb-2 block text-sm font-medium text-[#111111]">Door Reference</span>
               <input
                 value={doorRef}
                 onChange={(event) => handleDoorRefChange(event.target.value)}
                 placeholder="e.g. Front Entrance"
-                className="w-full rounded-[1rem] border border-[#DCE5DD] bg-white px-4 py-3 text-sm text-[#4B4F4C] outline-none transition focus:border-[#40584A]"
+                className="w-full rounded-[1rem] border border-[#D7D7D7] bg-white px-4 py-3 text-sm text-[#2A2A2A] outline-none transition focus:border-[#F47A20]"
               />
-              {doorRefError && (
-                <p className="mt-2 text-sm text-red-600">{doorRefError}</p>
-              )}
+              {doorRefError && <p className="mt-2 text-sm text-red-600">{doorRefError}</p>}
             </label>
 
             {!isDoorRefValid ? (
-              <div className="rounded-[1rem] border border-dashed border-[#DCE5DD] bg-[#F8FAF8] px-4 py-4 text-sm text-[#4B4F4C]">
+              <div className="rounded-[1rem] border border-dashed border-[#D7D7D7] bg-[#FFF9F4] px-4 py-4 text-sm text-[#2A2A2A]">
                 Enter a door reference to begin the configuration.
               </div>
             ) : (
-              state.visibleFields.map((field) => (
-                <label key={field.key} className="block">
-                  <span className="mb-2 block text-sm font-medium text-[#40584A]">
-                    {field.label}
-                  </span>
-                  <select
-                    value={selections[field.key] ?? ""}
-                    onChange={(event) =>
-                      handleSelection(field.key, event.target.value)
-                    }
-                    className="w-full rounded-[1rem] border border-[#DCE5DD] bg-white px-4 py-3 text-sm text-[#4B4F4C] outline-none transition focus:border-[#40584A]"
-                  >
-                    <option value="">
-                      Select {field.label.toLowerCase()}
-                    </option>
-                    {field.options.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ))
+              state.visibleFields.map((field) => {
+                if (field.type === "input") {
+                  return (
+                    <label key={field.key} className="block">
+                      <span className="mb-2 block text-sm font-medium text-[#111111]">{field.label}</span>
+                      <input
+                        type={field.inputType ?? "text"}
+                        inputMode={field.inputType === "number" ? "numeric" : "text"}
+                        value={selections[field.key] ?? ""}
+                        onChange={(event) => handleSelection(field.key, event.target.value)}
+                        className="w-full rounded-[1rem] border border-[#D7D7D7] bg-white px-4 py-3 text-sm text-[#2A2A2A] outline-none transition focus:border-[#F47A20]"
+                        placeholder={`Enter ${field.label.toLowerCase()}`}
+                      />
+                    </label>
+                  );
+                }
+
+                if (field.type === "colour") {
+                  return (
+                    <div key={field.key}>
+                      <span className="mb-3 block text-sm font-medium text-[#111111]">{field.label}</span>
+                      <div className="flex flex-wrap gap-3">
+                        {field.options.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => handleSelection(field.key, option.value)}
+                            className={`h-10 w-10 rounded-full border-2 transition ${
+                              selections[field.key] === option.value
+                                ? "border-[#F47A20] scale-110 ring-4 ring-[#F47A20]/20"
+                                : "border-[#D7D7D7] hover:border-[#F47A20]"
+                            }`}
+                            style={{ backgroundColor: colourSwatches[option.value] ?? "#9CA3AF" }}
+                            title={option.label}
+                            aria-label={option.label}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <label key={field.key} className="block">
+                    <span className="mb-2 block text-sm font-medium text-[#111111]">{field.label}</span>
+                    <select
+                      value={selections[field.key] ?? ""}
+                      onChange={(event) => handleSelection(field.key, event.target.value)}
+                      className="w-full rounded-[1rem] border border-[#D7D7D7] bg-white px-4 py-3 text-sm text-[#2A2A2A] outline-none transition focus:border-[#F47A20]"
+                    >
+                      <option value="">Select {field.label.toLowerCase()}</option>
+                      {field.options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                );
+              })
             )}
           </div>
 
-          <div className="mt-8 rounded-[1.5rem] border border-[#DCE5DD] bg-[#F8FAF8] p-5">
-            <h3 className="text-sm font-semibold text-[#40584A]">
-              Current selections
-            </h3>
+          <div className="mt-8 rounded-[1.5rem] border border-[#D7D7D7] bg-[#FFF9F4] p-5">
+            <h3 className="text-sm font-semibold text-[#111111]">Current selections</h3>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {Object.keys(selectionSummary).length === 0 ? (
-                <p className="text-sm text-[#4B4F4C]">
-                  Enter a door reference, then choose the door type to reveal
-                  the next dropdown and drawing state.
+                <p className="text-sm text-[#2A2A2A]">
+                  Enter a door reference, then complete the configurator step by step.
                 </p>
               ) : (
                 Object.entries(selectionSummary).map(([key, value]) => (
-                  <div
-                    key={key}
-                    className="rounded-[1rem] bg-white px-4 py-3 text-sm text-[#4B4F4C]"
-                  >
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A908C]">
-                      {key.replace(/([A-Z])/g, " $1")}
+                  <div key={key} className="rounded-[1rem] bg-white px-4 py-3 text-sm text-[#2A2A2A]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6B6B6B]">
+                      {summaryLabels[key as ConfigFieldKey] ?? key}
                     </p>
-                    <p className="mt-1 font-medium text-[#40584A]">{value}</p>
+                    <p className="mt-1 font-medium text-[#111111]">{value}</p>
                   </div>
                 ))
               )}
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#E7EEE7] pt-6">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#E8E0D9] pt-6">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-[#40584A]">Qty</span>
-              <div className="flex items-center rounded-full border border-[#DCE5DD] bg-white">
+              <span className="text-sm font-medium text-[#111111]">Qty</span>
+              <div className="flex items-center rounded-full border border-[#D7D7D7] bg-white">
                 <button
                   type="button"
-                  onClick={() =>
-                    setQuantity((current) => Math.max(1, current - 1))
-                  }
-                  className="px-4 py-2 text-sm font-semibold"
+                  onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                  className="px-4 py-2 text-sm font-semibold text-[#111111] transition hover:text-[#F47A20]"
                 >
                   −
                 </button>
-                <span className="min-w-[2.5rem] text-center text-sm font-medium">
-                  {quantity}
-                </span>
+                <span className="min-w-[2.5rem] text-center text-sm font-medium">{quantity}</span>
                 <button
                   type="button"
                   onClick={() => setQuantity((current) => current + 1)}
-                  className="px-4 py-2 text-sm font-semibold"
+                  className="px-4 py-2 text-sm font-semibold text-[#111111] transition hover:text-[#F47A20]"
                 >
                   +
                 </button>
@@ -311,7 +346,7 @@ export default function ConfiguratorPage() {
               type="button"
               disabled={!isDoorRefValid || !state.isComplete || isLoading}
               onClick={handleAddToBasket}
-              className="rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-full bg-[#F47A20] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isLoading ? "Updating..." : "Add to basket"}
             </button>
@@ -319,12 +354,7 @@ export default function ConfiguratorPage() {
         </div>
       </div>
 
-      <AddedToBasketModal
-        isOpen={Boolean(addedDoor)}
-        quoteRef={quoteRef}
-        door={addedDoor}
-        onClose={() => setAddedDoor(null)}
-      />
+      <AddedToBasketModal isOpen={Boolean(addedDoor)} quoteRef={quoteRef} door={addedDoor} onClose={() => setAddedDoor(null)} />
     </section>
   );
 }
