@@ -37,15 +37,15 @@ export default function SiteShell({ children }: { children: ReactNode }) {
           </Link>
 
           <nav className="hidden items-center gap-4 lg:flex">
-            <NavLink to="/" className={navLinkClass}>Home</NavLink>
-            <NavLink to="/shop" className={navLinkClass}>Doors</NavLink>
-            <NavLink to="/help-centre" className={navLinkClass}>Help Centre</NavLink>
-            <NavLink to="/contact" className={navLinkClass}>Contact</NavLink>
+            <NavLink to="/" className={navLinkClass}>HOME</NavLink>
+            <NavLink to="/shop" className={navLinkClass}>DOORS</NavLink>
+            <NavLink to="/help-centre" className={navLinkClass}>HELP CENTRE</NavLink>
+            <NavLink to="/contact" className={navLinkClass}>CONTACT</NavLink>
           </nav>
 
           <div className="flex items-center gap-3">
-            <NavLink to="/order-online" className="rounded-full bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]">
-              Order Online
+            <NavLink to="/order-online" className={navLinkClass} >
+              ORDER ONLINE
             </NavLink>
             <button
               type="button"
@@ -55,7 +55,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
             >
               <ShoppingCart size={22} strokeWidth={1.8} />
               {itemCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-[#F47A20] px-1 text-xs text-white">
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-b-md bg-[#F47A20] px-1 text-xs text-white">
                   {itemCount}
                 </span>
               )}
