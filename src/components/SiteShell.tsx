@@ -30,7 +30,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
           </Link>
 
           <nav className="hidden items-center gap-4 lg:flex">
-            <NavLink to="/" className={navLinkClass}>Home</NavLink>
+            <NavLink to="/" className={navLinkClass}>My Quote</NavLink>
             <NavLink to="/help-centre" className={navLinkClass}>Help Centre</NavLink>
             <NavLink to="/contact" className={navLinkClass}>Contact</NavLink>
           </nav>
