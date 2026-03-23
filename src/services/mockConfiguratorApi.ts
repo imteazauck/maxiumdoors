@@ -52,20 +52,25 @@ const basePriceMatrix: BasePriceBand[] = [
   { leafType: "single", minHeight: 1000, maxHeight: 2150, minWidth: 900, maxWidth: 1010, price: 647.37 },
   { leafType: "single", minHeight: 1000, maxHeight: 2150, minWidth: 1011, maxWidth: 1210, price: 652.63 },
   { leafType: "single", minHeight: 1000, maxHeight: 2150, minWidth: 1211, maxWidth: 1460, price: 756.14 },
+
   { leafType: "single", minHeight: 2151, maxHeight: 2500, minWidth: 900, maxWidth: 1010, price: 698.25 },
   { leafType: "single", minHeight: 2151, maxHeight: 2500, minWidth: 1011, maxWidth: 1210, price: 703.51 },
   { leafType: "single", minHeight: 2151, maxHeight: 2500, minWidth: 1211, maxWidth: 1460, price: 784.21 },
+
   { leafType: "single", minHeight: 2501, maxHeight: 2960, minWidth: 900, maxWidth: 1010, price: 778.95 },
   { leafType: "single", minHeight: 2501, maxHeight: 2960, minWidth: 1011, maxWidth: 1210, price: 785.96 },
   { leafType: "single", minHeight: 2501, maxHeight: 2960, minWidth: 1211, maxWidth: 1460, price: 875.44 },
+
   { leafType: "double", minHeight: 1000, maxHeight: 1400, minWidth: 1000, maxWidth: 1400, price: 1207.02 },
   { leafType: "double", minHeight: 1000, maxHeight: 1400, minWidth: 1401, maxWidth: 1800, price: 1228.07 },
-  { leafType: "double", minHeight: 1000, maxHeight: 1400, minWidth: 1801, maxWidth: 2200, price: 1238.6 },
+  { leafType: "double", minHeight: 1000, maxHeight: 1400, minWidth: 1801, maxWidth: 2200, price: 1238.60 },
+
   { leafType: "double", minHeight: 1401, maxHeight: 1800, minWidth: 1000, maxWidth: 1400, price: 1278.95 },
-  { leafType: "double", minHeight: 1401, maxHeight: 1800, minWidth: 1401, maxWidth: 1800, price: 1300.0 },
+  { leafType: "double", minHeight: 1401, maxHeight: 1800, minWidth: 1401, maxWidth: 1800, price: 1300.00 },
   { leafType: "double", minHeight: 1401, maxHeight: 1800, minWidth: 1801, maxWidth: 2200, price: 1310.53 },
+
   { leafType: "double", minHeight: 1801, maxHeight: 2200, minWidth: 1000, maxWidth: 1400, price: 1421.05 },
-  { leafType: "double", minHeight: 1801, maxHeight: 2200, minWidth: 1401, maxWidth: 1800, price: 1438.6 },
+  { leafType: "double", minHeight: 1801, maxHeight: 2200, minWidth: 1401, maxWidth: 1800, price: 1438.60 },
   { leafType: "double", minHeight: 1801, maxHeight: 2200, minWidth: 1801, maxWidth: 2200, price: 1457.89 },
 ];
 
@@ -161,11 +166,15 @@ function parseNumber(value?: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function getBasePrice(leafType?: string, structuralHeight?: string, structuralWidth?: string) {
-  const height = parseNumber(structuralHeight);
-  const width = parseNumber(structuralWidth);
+function getBasePrice(
+  leafType?: string,
+  structuralHeight?: string,
+  structuralWidth?: string
+) {
+  const height = Number(structuralHeight);
+  const width = Number(structuralWidth);
 
-  if (!leafType || height === null || width === null) {
+  if (!leafType || !Number.isFinite(height) || !Number.isFinite(width)) {
     return 0;
   }
 
@@ -175,7 +184,7 @@ function getBasePrice(leafType?: string, structuralHeight?: string, structuralWi
       height >= band.minHeight &&
       height <= band.maxHeight &&
       width >= band.minWidth &&
-      width <= band.maxWidth,
+      width <= band.maxWidth
   );
 
   return match?.price ?? 0;
