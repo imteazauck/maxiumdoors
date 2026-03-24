@@ -27,7 +27,8 @@ export default function QuoteSummaryPage() {
             {customerDetails.customerName} · {customerDetails.addressLine1}, {customerDetails.city}
           </p>
         </div>
-        <Link to="/order-online/configure" className="rounded-full bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]">
+
+        <Link to="/order-online/configure" className="rounded-full  border border-[#D7D7D7] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#FFF6EE]">
           Add another door
         </Link>
       </div>
@@ -56,14 +57,18 @@ export default function QuoteSummaryPage() {
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <ul className="mt-4 divide-y divide-[#E7DED5]">
                   {Object.entries(door.selections).map(([key, value]) => (
-                    <div key={key} className="rounded-[1rem] bg-[#FFF9F4] px-4 py-3 text-sm text-[#2A2A2A]">
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6B6B6B]">{key.replace(/([A-Z])/g, " $1")}</p>
-                      <p className="mt-1 font-medium text-[#111111]">{value}</p>
-                    </div>
+                    <li key={key} className="flex items-center justify-between py-3">
+                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A908C]">
+                      {key.replace(/([A-Z])/g, " $1")}
+                      </span>
+                      <span className="text-sm font-medium text-[#111111]">
+                        {value}
+                      </span>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </article>
             ))
           )}
