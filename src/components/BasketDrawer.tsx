@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 function formatMoney(value: number) {
@@ -8,6 +9,7 @@ function formatMoney(value: number) {
 }
 
 export default function BasketDrawer() {
+  const navigate = useNavigate();
   const { items, subtotal, isBasketOpen, closeBasket, removeItem, updateQuantity } = useCart();
 
   return (
@@ -84,7 +86,14 @@ export default function BasketDrawer() {
               <span>Subtotal</span>
               <span className="text-[#F47A20]">{formatMoney(subtotal)}</span>
             </div>
-            <button type="button" className="mt-4 w-full rounded-full bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]">
+            <button
+              type="button"
+              onClick={() => {
+                closeBasket();
+                navigate("/order-online/checkout");
+              }}
+              className="mt-4 w-full rounded-full bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]"
+            >
               Proceed to checkout
             </button>
 

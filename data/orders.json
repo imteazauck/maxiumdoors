@@ -1,0 +1,94 @@
+[
+  {
+    "orderId": "ORD-1774387420515",
+    "quoteRef": "MAX-20260324-QST",
+    "createdAt": "2026-03-24T21:23:40.513Z",
+    "customerDetails": {
+      "customerName": "Imteaz auckbaraullee",
+      "companyName": "Imteaz Auckbaraullee",
+      "email": "a_imteaz@yahoo.co.uk",
+      "phone": "07931350511",
+      "addressLine1": "26 Abercorn Road",
+      "addressLine2": "",
+      "city": "LONDON",
+      "postcode": "LU4 0RN"
+    },
+    "doors": [
+      {
+        "doorRef": "d1",
+        "title": "Single",
+        "selections": {
+          "leafType": "Single",
+          "handing": "Right Hand In",
+          "structuralHeight": "2100",
+          "structuralWidth": "1200",
+          "doorType": "Vision Panel 508x508",
+          "lockType": "Closer Ts4000",
+          "colour": "Green"
+        },
+        "unitPrice": 939.65,
+        "quantity": 1,
+        "technicalNotes": [
+          "Base price taken from height/width matrix.",
+          "Selected option: Vision Panel 508x508 each.",
+          "Selected hardware: Closer (TS4000) per leaf.",
+          "Drawing selected for right-hand-in.",
+          "Preview updated for green finish."
+        ]
+      }
+    ],
+    "subtotal": 939.65,
+    "payment": {
+      "cardholderName": "I Auckbarar",
+      "expiry": "12/29",
+      "maskedCardNumber": "************3456",
+      "paymentLast4": "3456"
+    }
+  },
+  {
+    "orderId": "ORD-1774387740024",
+    "quoteRef": "MAX-20260324-6SE",
+    "createdAt": "2026-03-24T21:29:00.024Z",
+    "customerDetails": {
+      "customerName": "Imteaz auckbaraullee",
+      "companyName": "Imteaz Auckbaraullee",
+      "email": "a_imteaz@yahoo.co.uk",
+      "phone": "07931350511",
+      "addressLine1": "26 Abercorn Road",
+      "addressLine2": "",
+      "city": "LONDON",
+      "postcode": "LU4 0RN"
+    },
+    "doors": [
+      {
+        "doorRef": "d2",
+        "title": "Double",
+        "selections": {
+          "leafType": "Double",
+          "handing": "Left Active",
+          "structuralHeight": "2100",
+          "structuralWidth": "1200",
+          "doorType": "Vision Panel 508x508",
+          "lockType": "Closer Ts4000",
+          "colour": "Red"
+        },
+        "unitPrice": 1708.07,
+        "quantity": 1,
+        "technicalNotes": [
+          "Base price taken from height/width matrix.",
+          "Selected option: Vision Panel 508x508 each.",
+          "Selected hardware: Closer (TS4000) per leaf.",
+          "Drawing selected for left-active.",
+          "Preview updated for red finish."
+        ]
+      }
+    ],
+    "subtotal": 1708.07,
+    "payment": {
+      "cardholderName": "I A",
+      "expiry": "12/29",
+      "maskedCardNumber": "************3456",
+      "paymentLast4": "3456"
+    }
+  }
+]

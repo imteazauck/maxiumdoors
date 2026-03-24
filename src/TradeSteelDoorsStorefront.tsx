@@ -10,6 +10,8 @@ import ProductPage from "./pages/ProductPage";
 import QuoteStartPage from "./pages/QuoteStartPage";
 import ConfiguratorPage from "./pages/ConfiguratorPage";
 import QuoteSummaryPage from "./pages/QuoteSummaryPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import ThankYouPage from "./pages/ThankYouPage";
 import ShopPage from "./pages/ShopPage";
 
 export default function TradeSteelDoorsStorefront() {
@@ -30,6 +32,8 @@ export default function TradeSteelDoorsStorefront() {
               <Route path="/portal/dashboard" element={<PortalDashboardPage />} />
               <Route path="/order-online/configure" element={<ConfiguratorPage />} />
               <Route path="/order-online/summary" element={<QuoteSummaryPage />} />
+              <Route path="/order-online/checkout" element={<CheckoutPage />} />
+              <Route path="/order-online/thank-you" element={<ThankYouPage />} />
             </Routes>
           </SiteShell>
         </QuoteProvider>

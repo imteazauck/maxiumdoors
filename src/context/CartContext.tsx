@@ -40,6 +40,7 @@ type CartContextValue = {
   addConfiguredItem: (input: AddConfiguredItemInput) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -103,6 +104,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)));
   }
 
+  function clearCart() {
+    setItems([]);
+    setIsBasketOpen(false);
+  }
+
   const value = useMemo(() => {
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
     const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
@@ -118,6 +124,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addConfiguredItem,
       removeItem,
       updateQuantity,
+      clearCart,
     };
   }, [isBasketOpen, items]);
 

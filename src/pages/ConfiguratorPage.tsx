@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
-import AddedToBasketModal from "../components/AddedToBasketModal";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import DrawingPanel from "../components/DrawingPanel";
 import { useCart } from "../context/CartContext";
-import { useQuote, type ConfiguredDoor } from "../context/QuoteContext";
+import { useQuote } from "../context/QuoteContext";
+
 import {
   getConfiguratorState,
   type ConfigSelections,
@@ -55,14 +55,13 @@ function humanize(value?: string) {
 export default function ConfiguratorPage() {
   const { customerDetails, quoteRef, addDoor, doorRefExists } = useQuote();
   const { addConfiguredItem } = useCart();
-
+  const navigate = useNavigate();
   const [doorRef, setDoorRef] = useState("");
   const [doorRefError, setDoorRefError] = useState("");
   const [selections, setSelections] = useState<ConfigSelections>({});
   const [state, setState] = useState<ConfiguratorResponse>(initialState);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [addedDoor, setAddedDoor] = useState<ConfiguredDoor | null>(null);
 
   const trimmedDoorRef = doorRef.trim();
   const isDoorRefValid = trimmedDoorRef.length > 0;
@@ -141,7 +140,7 @@ export default function ConfiguratorPage() {
       setDoorRefError("Enter a door reference before adding this door.");
       return;
     }
-
+ 
     if (doorRefExists(trimmedDoorRef)) {
       setDoorRefError("This door reference is already in use for this quote.");
       return;
@@ -169,11 +168,13 @@ export default function ConfiguratorPage() {
       ),
     });
 
-    setAddedDoor(door);
     setSelections({});
     setQuantity(1);
     setDoorRef("");
     setDoorRefError("");
+    setTimeout(() => {
+      navigate("/order-online/summary");
+    }, 300);
   }
 
   return (
@@ -205,7 +206,7 @@ export default function ConfiguratorPage() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">
-                MultiDor configurator
+                MultiDoor configurator
               </p>
               <h2 className="mt-2 text-3xl font-semibold text-[#111111]">Build your door</h2>
             </div>
@@ -300,25 +301,30 @@ export default function ConfiguratorPage() {
             )}
           </div>
 
-          <div className="mt-8 rounded-[1.5rem] border border-[#D7D7D7] bg-[#FFF9F4] p-5">
-            <h3 className="text-sm font-semibold text-[#111111]">Current selections</h3>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {Object.keys(selectionSummary).length === 0 ? (
-                <p className="text-sm text-[#2A2A2A]">
-                  Enter a door reference, then complete the configurator step by step.
-                </p>
-              ) : (
-                Object.entries(selectionSummary).map(([key, value]) => (
-                  <div key={key} className="rounded-[1rem] bg-white px-4 py-3 text-sm text-[#2A2A2A]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6B6B6B]">
-                      {summaryLabels[key as ConfigFieldKey] ?? key}
-                    </p>
-                    <p className="mt-1 font-medium text-[#111111]">{value}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+<div className="mt-8 rounded-[1.5rem] border border-[#E7DED5] bg-[#FFF9F4] p-5">
+  <h3 className="text-sm font-semibold text-[#111111]">
+    Current selections
+  </h3>
+
+  {Object.keys(selectionSummary).length === 0 ? (
+    <p className="mt-4 text-sm text-[#2A2A2A]">
+      Enter a door reference, then complete the configurator step by step.
+    </p>
+  ) : (
+    <ul className="mt-4 divide-y divide-[#E7DED5]">
+      {Object.entries(selectionSummary).map(([key, value]) => (
+        <li key={key} className="flex items-center justify-between py-3">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8A908C]">
+            {summaryLabels[key as ConfigFieldKey] ?? key}
+          </span>
+          <span className="text-sm font-medium text-[#111111] text-right">
+            {value}
+          </span>
+        </li>
+      ))}
+    </ul>
+  )}
+</div>
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-[#E8E0D9] pt-6">
             <div className="flex items-center gap-3">
@@ -354,7 +360,6 @@ export default function ConfiguratorPage() {
         </div>
       </div>
 
-      <AddedToBasketModal isOpen={Boolean(addedDoor)} quoteRef={quoteRef} door={addedDoor} onClose={() => setAddedDoor(null)} />
     </section>
   );
 }

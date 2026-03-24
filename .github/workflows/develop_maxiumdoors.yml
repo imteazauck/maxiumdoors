@@ -71,4 +71,5 @@ jobs:
         with:
           app-name: maxiumdoors
           slot-name: Production
+
           package: .

@@ -79,7 +79,8 @@ export default function QuoteStartPage() {
             <input required value={values.postcode} onChange={(e) => update("postcode", e.target.value)} className="w-full rounded-[1rem] border border-[#D7D7D7] px-4 py-3 text-sm outline-none transition focus:border-[#F47A20]" />
           </label>
           <div className="sm:col-span-2 flex justify-end pt-2">
-            <button type="submit" className="rounded-full bg-[#F47A20] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]">
+            <button type="submit"  
+            className="mt-4 rounded-full bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]">
               Continue to configurator
             </button>
           </div>
