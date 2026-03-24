@@ -11,9 +11,9 @@ export const pricingMatrices: ProductPricingMatrix[] = [
     currency: "GBP",
     vatMode: "ex_vat",
     bands: [
-      { code: "900-1010", widthMin: 900, widthMax: 1010, basePrice: 647.7 },
-      { code: "1011-1210", widthMin: 1011, widthMax: 1210, basePrice: 653.63 },
-      { code: "1211-1460", widthMin: 1101, widthMax: 1200, basePrice: 756.14 },
+      { code: "900-1000", widthMin: 900, widthMax: 1000, basePrice: 647.7 },
+      { code: "1001-1100", widthMin: 1001, widthMax: 1100, basePrice: 653.63 },
+      { code: "1101-1200", widthMin: 1101, widthMax: 1200, basePrice: 756.14 },
     ],
     options: [
       { id: "vision-406", category: "vision", label: "Vision Panel 406x406", price: 127.56, priceModel: "each" },
