@@ -28,7 +28,7 @@ export default function QuoteSummaryPage() {
           </p>
         </div>
 
-        <Link to="/order-online/configure" className="rounded-full  border border-[#D7D7D7] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#FFF6EE]">
+        <Link to="/order-online/configure" className="rounded-full border border-[#D7D7D7] px-5 py-3 text-sm font-semibold text-[#111111] transition hover:bg-[#FFF6EE]">
           Add another door
         </Link>
       </div>
@@ -87,9 +87,17 @@ export default function QuoteSummaryPage() {
             ))}
           </div>
 
-          <div className="mt-6 border-t border-[#D7D7D7] pt-5 flex items-center justify-between">
-            <span className="text-sm font-semibold text-[#111111]">Subtotal</span>
-            <span className="text-xl font-semibold text-[#F47A20]">{formatMoney(subtotal)}</span>
+          <div className="mt-6 border-t border-[#D7D7D7] pt-5">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-[#111111]">Subtotal</span>
+              <span className="text-xl font-semibold text-[#F47A20]">{formatMoney(subtotal)}</span>
+            </div>
+            <Link
+              to="/order-online/checkout"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]"
+            >
+              Proceed to checkout
+            </Link>
           </div>
         </aside>
       </div>
