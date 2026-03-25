@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import DrawingPanel from "../components/DrawingPanel";
 import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
