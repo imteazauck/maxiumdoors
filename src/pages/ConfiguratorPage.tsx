@@ -62,9 +62,30 @@ export default function ConfiguratorPage() {
   const [state, setState] = useState<ConfiguratorResponse>(initialState);
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [heightError, setHeightError] = useState("");
+  const [widthError, setWidthError] = useState("");
   const trimmedDoorRef = doorRef.trim();
   const isDoorRefValid = trimmedDoorRef.length > 0;
+  const RANGE_BY_LEAF = {
+  single: {
+    height: { min: 1000, max: 2960 },
+    width: { min: 900, max: 1460 },
+  },
+  double: {
+    height: { min: 1000, max: 2200 },
+    width: { min: 1000, max: 2200 },
+  },
+} as const;
+
+  const currentLeaf = selections.leafType as keyof typeof RANGE_BY_LEAF | undefined;
+
+  const heightRange = currentLeaf
+    ? RANGE_BY_LEAF[currentLeaf].height
+    : { min: 0, max: Infinity };
+
+  const widthRange = currentLeaf
+    ? RANGE_BY_LEAF[currentLeaf].width
+    : { min: 0, max: Infinity };
 
   useEffect(() => {
     let isMounted = true;
@@ -123,8 +144,58 @@ export default function ConfiguratorPage() {
       [startKey]: nextValue,
     });
   }
+  function validateHeight(value: string) {
+    const num = Number(value);
+
+    if (!value) {
+      setHeightError("");
+      return;
+    }
+
+    if (!currentLeaf || !Number.isFinite(num)) {
+      setHeightError("");
+      return;
+    }
+
+    if (num < heightRange.min || num > heightRange.max) {
+      setHeightError(
+        `Enter a value between ${heightRange.min} and ${heightRange.max} mm.`
+      );
+      return;
+    }
+
+    setHeightError("");
+  }
+
+  function validateWidth(value: string) {
+    const num = Number(value);
+
+    if (!value) {
+      setWidthError("");
+      return;
+    }
+
+    if (!currentLeaf || !Number.isFinite(num)) {
+      setWidthError("");
+      return;
+    }
+
+    if (num < widthRange.min || num > widthRange.max) {
+      setWidthError(
+        `Enter a value between ${widthRange.min} and ${widthRange.max} mm.`
+      );
+      return;
+    }
+
+    setWidthError("");
+  }
 
   function handleSelection(key: ConfigFieldKey, value: string) {
+        if (key === "leafType") {
+      setHeightError("");
+      setWidthError("");
+    }
+
     resetFollowingFields(key, value);
   }
 
@@ -145,12 +216,15 @@ export default function ConfiguratorPage() {
       setDoorRefError("This door reference is already in use for this quote.");
       return;
     }
+    if (heightError || widthError) {
+      return;
+    }
 
     if (!state.isComplete) return;
 
     const door = addDoor({
       doorRef: trimmedDoorRef,
-      title: humanize(selections.leafType) || "Configured door",
+      title: humanize(selections.doorType) || "Configured door",
       selections: selectionSummary,
       unitPrice: state.unitPrice,
       quantity,
@@ -164,7 +238,7 @@ export default function ConfiguratorPage() {
       unitPrice: door.unitPrice,
       quantity: door.quantity,
       details: Object.entries(door.selections).map(
-        ([key, value]) => `${summaryLabels[key as ConfigFieldKey] ?? key}: ${value}`,
+      ([key, value]) => `${key.replace(/([A-Z])/g, " $1")}: ${value}`
       ),
     });
 
@@ -172,6 +246,8 @@ export default function ConfiguratorPage() {
     setQuantity(1);
     setDoorRef("");
     setDoorRefError("");
+    setHeightError("");
+    setWidthError("");
     setTimeout(() => {
       navigate("/order-online/summary");
     }, 300);
@@ -182,21 +258,14 @@ export default function ConfiguratorPage() {
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">
-            Quote reference
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold text-[#111111]">{quoteRef}</h1>
+            Quote reference : {quoteRef}</p>
           <p className="mt-2 text-sm text-[#2A2A2A]">
             Customer: {customerDetails.customerName}
             {trimmedDoorRef ? ` · Door Ref: ${trimmedDoorRef}` : ""}
           </p>
         </div>
 
-        <Link
-          to="/order-online/summary"
-          className="rounded-full border border-[#D7D7D7] px-5 py-3 text-sm font-semibold text-[#111111] transition hover:bg-[#FFF6EE]"
-        >
-          View quote summary
-        </Link>
+
       </div>
 
       <div className="grid gap-8 items-start lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
@@ -239,6 +308,72 @@ export default function ConfiguratorPage() {
               </div>
             ) : (
               state.visibleFields.map((field) => {
+                                if (field.type === "input" && field.key === "structuralHeight") {
+                  return (
+                    <label key={field.key} className="block">
+                      <span className="mb-2 block text-sm font-medium text-[#111111]">
+                        {field.label}
+                      </span>
+                      <input
+                        type={field.inputType ?? "text"}
+                        inputMode={
+                          field.inputType === "number" ? "numeric" : "text"
+                        }
+                        value={selections[field.key] ?? ""}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          handleSelection(field.key, value);
+                          validateHeight(value);
+                        }}
+                        min={Number.isFinite(heightRange.min) ? heightRange.min : undefined}
+                        max={Number.isFinite(heightRange.max) ? heightRange.max : undefined}
+                        className="w-full rounded-[1rem] border border-[#D7D7D7] bg-white px-4 py-3 text-sm text-[#2A2A2A] outline-none transition focus:border-[#F47A20]"
+                        placeholder="Enter structural opening height"
+                      />
+                      {heightError ? (
+                        <p className="mt-2 text-sm text-red-600">{heightError}</p>
+                      ) : currentLeaf ? (
+                        <p className="mt-2 text-xs text-[#8A908C]">
+                          Min {heightRange.min} mm — Max {heightRange.max} mm
+                        </p>
+                      ) : null}
+                    </label>
+                  );
+                }
+
+                if (field.type === "input" && field.key === "structuralWidth") {
+                  return (
+                    <label key={field.key} className="block">
+                      <span className="mb-2 block text-sm font-medium text-[#111111]">
+                        {field.label}
+                      </span>
+                      <input
+                        type={field.inputType ?? "text"}
+                        inputMode={
+                          field.inputType === "number" ? "numeric" : "text"
+                        }
+                        value={selections[field.key] ?? ""}
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          handleSelection(field.key, value);
+                          validateWidth(value);
+                        }}
+                        min={Number.isFinite(widthRange.min) ? widthRange.min : undefined}
+                        max={Number.isFinite(widthRange.max) ? widthRange.max : undefined}
+                        className="w-full rounded-[1rem] border border-[#D7D7D7] bg-white px-4 py-3 text-sm text-[#2A2A2A] outline-none transition focus:border-[#F47A20]"
+                        placeholder="Enter structural opening width"
+                      />
+                      {widthError ? (
+                        <p className="mt-2 text-sm text-red-600">{widthError}</p>
+                      ) : currentLeaf ? (
+                        <p className="mt-2 text-xs text-[#8A908C]">
+                          Min {widthRange.min} mm — Max {widthRange.max} mm
+                        </p>
+                      ) : null}
+                    </label>
+                  );
+                }
+
                 if (field.type === "input") {
                   return (
                     <label key={field.key} className="block">

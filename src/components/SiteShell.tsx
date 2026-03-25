@@ -33,6 +33,11 @@ export default function SiteShell({ children }: { children: ReactNode }) {
             <NavLink to="/" className={navLinkClass}>My Quote</NavLink>
             <NavLink to="/help-centre" className={navLinkClass}>Help Centre</NavLink>
             <NavLink to="/contact" className={navLinkClass}>Contact</NavLink>
+            {itemCount > 0 && (
+                <NavLink to="/order-online/summary" className={navLinkClass}>
+                  View quote summary
+                </NavLink>
+              )}
           </nav>
 
           <div className="flex items-center gap-3">
