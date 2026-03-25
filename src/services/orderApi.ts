@@ -7,11 +7,32 @@ export type CardDetailsInput = {
   cvv: string;
 };
 
+export type DeliveryDetailsInput = {
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  county: string;
+  country: string;
+  useParentsPostCode: boolean;
+  postCode: string;
+  confirmAddress: boolean;
+  contactEmail: string;
+  contactPhone: string;
+  siteContactName: string;
+  siteContactPhone: string;
+  amDelivery: boolean;
+  pre10amDelivery: boolean;
+  offloadingAvailable: boolean;
+  deliveryMethod: string;
+  estimatedDeliveryDate: string;
+};
+
 export type CheckoutPayload = {
   quoteRef: string;
   customerDetails: CustomerDetails;
   doors: ConfiguredDoor[];
   subtotal: number;
+  deliveryDetails: DeliveryDetailsInput;
   payment: CardDetailsInput;
 };
 

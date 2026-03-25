@@ -1,6 +1,8 @@
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { jsPDF } from "jspdf";
 import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
+import ActionButton from "../components/ActionButton";
 
 function formatMoney(value: number) {
   return `£${value.toLocaleString(undefined, {
@@ -9,66 +11,21 @@ function formatMoney(value: number) {
   })}`;
 }
 
-function escapePdfText(value: string) {
-  return value
-    .replace(/\\/g, "\\\\")
-    .replace(/\(/g, "\\(")
-    .replace(/\)/g, "\\)");
-}
-
-function toPdfLine(text: string, x: number, y: number, fontSize = 12) {
-  return `BT /F1 ${fontSize} Tf ${x} ${y} Td (${escapePdfText(text)}) Tj ET`;
-}
-
-function getJpegDimensions(bytes: Uint8Array) {
-  let offset = 2;
-
-  while (offset < bytes.length) {
-    if (bytes[offset] !== 0xff) {
-      offset += 1;
-      continue;
-    }
-
-    const marker = bytes[offset + 1];
-    const length = (bytes[offset + 2] << 8) + bytes[offset + 3];
-
-    const isStartOfFrame =
-      marker >= 0xc0 &&
-      marker <= 0xcf &&
-      marker !== 0xc4 &&
-      marker !== 0xc8 &&
-      marker !== 0xcc;
-
-    if (isStartOfFrame) {
-      const height = (bytes[offset + 5] << 8) + bytes[offset + 6];
-      const width = (bytes[offset + 7] << 8) + bytes[offset + 8];
-      return { width, height };
-    }
-
-    offset += 2 + length;
-  }
-
-  throw new Error("Unable to read JPEG dimensions.");
-}
-
-async function loadJpeg(url: string) {
+async function imageToDataUrl(url: string) {
   const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`Unable to load image: ${url}`);
   }
 
-  const buffer = await response.arrayBuffer();
-  const bytes = new Uint8Array(buffer);
-  const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
-  const { width, height } = getJpegDimensions(bytes);
+  const blob = await response.blob();
 
-  return {
-    width,
-    height,
-    binary,
-    length: bytes.length,
-  };
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error(`Unable to read image: ${url}`));
+    reader.readAsDataURL(blob);
+  });
 }
 
 async function buildQuotePdf({
@@ -97,117 +54,112 @@ async function buildQuotePdf({
     technicalNotes?: string[];
   }[];
 }) {
+  const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const marginX = 40;
+
   const [headerImage, footerImage] = await Promise.all([
-    loadJpeg("/images/pdf-header.jpg"),
-    loadJpeg("/images/pdf-footer.jpg"),
+    imageToDataUrl("/images/header-logo.jpg"),
+    imageToDataUrl("/images/footer-logo.jpg"),
   ]);
 
-  const pageWidth = 595;
-  const pageHeight = 842;
-  const marginX = 40;
-  const usableWidth = pageWidth - marginX * 2;
+  pdf.addImage(headerImage, "JPEG", marginX, 20, pageWidth - marginX * 2, 75);
+  pdf.addImage(footerImage, "JPEG", marginX, pageHeight - 75, pageWidth - marginX * 2, 40);
 
-  const headerDisplayWidth = usableWidth;
-  const headerDisplayHeight = (headerImage.height / headerImage.width) * headerDisplayWidth;
-  const footerDisplayWidth = usableWidth;
-  const footerDisplayHeight = (footerImage.height / footerImage.width) * footerDisplayWidth;
+  let currentY = 125;
 
-  let currentY = pageHeight - 34 - headerDisplayHeight - 28;
-  const lines: string[] = [];
+  const ensureSpace = (neededHeight = 24) => {
+    if (currentY + neededHeight <= pageHeight - 90) {
+      return;
+    }
 
-  lines.push(toPdfLine("Quote Summary", marginX, currentY, 22));
-  currentY -= 28;
-  lines.push(toPdfLine(`Quote Ref: ${quoteRef}`, marginX, currentY, 12));
-  currentY -= 18;
-  lines.push(toPdfLine(`Customer: ${customerName}`, marginX, currentY, 12));
-  currentY -= 18;
+    pdf.addPage();
+    pdf.addImage(headerImage, "JPEG", marginX, 20, pageWidth - marginX * 2, 75);
+    pdf.addImage(footerImage, "JPEG", marginX, pageHeight - 75, pageWidth - marginX * 2, 40);
+    currentY = 125;
+  };
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(22);
+  pdf.text("Quote Summary", marginX, currentY);
+  currentY += 28;
+
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(12);
+  pdf.text(`Quote Ref: ${quoteRef}`, marginX, currentY);
+  currentY += 18;
+  pdf.text(`Customer: ${customerName}`, marginX, currentY);
+  currentY += 18;
 
   if (companyName) {
-    lines.push(toPdfLine(`Company: ${companyName}`, marginX, currentY, 12));
-    currentY -= 18;
+    pdf.text(`Company: ${companyName}`, marginX, currentY);
+    currentY += 18;
   }
 
-  lines.push(toPdfLine(`Email: ${email}`, marginX, currentY, 12));
-  currentY -= 18;
-  lines.push(toPdfLine(`Phone: ${phone}`, marginX, currentY, 12));
-  currentY -= 18;
-  lines.push(toPdfLine(`Address: ${address}`, marginX, currentY, 12));
-  currentY -= 30;
-  lines.push(toPdfLine("Door Summary", marginX, currentY, 16));
-  currentY -= 20;
+  pdf.text(`Email: ${email}`, marginX, currentY);
+  currentY += 18;
+  pdf.text(`Phone: ${phone}`, marginX, currentY);
+  currentY += 18;
+
+  const addressLines = pdf.splitTextToSize(`Address: ${address}`, pageWidth - marginX * 2);
+  pdf.text(addressLines, marginX, currentY);
+  currentY += addressLines.length * 14 + 16;
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(16);
+  pdf.text("Door Summary", marginX, currentY);
+  currentY += 24;
 
   doors.forEach((door, index) => {
-    lines.push(toPdfLine(`${index + 1}. ${door.doorRef} - ${door.title}`, marginX, currentY, 13));
-    currentY -= 18;
-    lines.push(
-      toPdfLine(
-        `Quantity: ${door.quantity}    Total: ${formatMoney(door.unitPrice * door.quantity)}`,
-        marginX + 10,
-        currentY,
-        11,
-      ),
+    ensureSpace(80 + Object.keys(door.selections).length * 16 + (door.technicalNotes?.length ?? 0) * 16);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(13);
+    pdf.text(`${index + 1}. ${door.doorRef} - ${door.title}`, marginX, currentY);
+    currentY += 18;
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(11);
+    pdf.text(
+      `Quantity: ${door.quantity}    Total: ${formatMoney(door.unitPrice * door.quantity)}`,
+      marginX + 10,
+      currentY,
     );
-    currentY -= 16;
+    currentY += 16;
 
     Object.entries(door.selections).forEach(([key, value]) => {
       const label = key.replace(/([A-Z])/g, " $1").trim();
-      lines.push(toPdfLine(`${label}: ${value}`, marginX + 10, currentY, 10));
-      currentY -= 14;
+      const line = `${label}: ${value}`;
+      const wrapped = pdf.splitTextToSize(line, pageWidth - (marginX + 10) * 2);
+      pdf.setFontSize(10);
+      pdf.text(wrapped, marginX + 10, currentY);
+      currentY += wrapped.length * 14;
     });
 
     if (door.technicalNotes?.length) {
       door.technicalNotes.forEach((note) => {
-        lines.push(toPdfLine(`Note: ${note}`, marginX + 10, currentY, 10));
-        currentY -= 14;
+        const wrapped = pdf.splitTextToSize(`Note: ${note}`, pageWidth - (marginX + 10) * 2);
+        pdf.text(wrapped, marginX + 10, currentY);
+        currentY += wrapped.length * 14;
       });
     }
 
-    currentY -= 10;
+    currentY += 12;
   });
 
-  lines.push(toPdfLine(`Subtotal: ${formatMoney(subtotal)}`, marginX, Math.max(currentY - 6, 120), 15));
+  ensureSpace(40);
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(15);
+  pdf.text(`Subtotal: ${formatMoney(subtotal)}`, marginX, currentY);
 
-  const headerX = marginX;
-  const headerY = pageHeight - 34 - headerDisplayHeight;
-  const footerX = marginX;
-  const footerY = 34;
-
-  const contentStream = [
-    `q ${headerDisplayWidth} 0 0 ${headerDisplayHeight} ${headerX} ${headerY} cm /Im1 Do Q`,
-    ...lines,
-    `q ${footerDisplayWidth} 0 0 ${footerDisplayHeight} ${footerX} ${footerY} cm /Im2 Do Q`,
-  ].join("\n");
-
-  const objects: string[] = [];
-  objects[1] = `<< /Type /Catalog /Pages 2 0 R >>`;
-  objects[2] = `<< /Type /Pages /Kids [3 0 R] /Count 1 >>`;
-  objects[3] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /Font << /F1 6 0 R >> /XObject << /Im1 4 0 R /Im2 5 0 R >> >> /Contents 7 0 R >>`;
-  objects[4] = `<< /Type /XObject /Subtype /Image /Width ${headerImage.width} /Height ${headerImage.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${headerImage.length} >>\nstream\n${headerImage.binary}\nendstream`;
-  objects[5] = `<< /Type /XObject /Subtype /Image /Width ${footerImage.width} /Height ${footerImage.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${footerImage.length} >>\nstream\n${footerImage.binary}\nendstream`;
-  objects[6] = `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>`;
-  objects[7] = `<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream`;
-
-  let pdf = "%PDF-1.4\n";
-  const offsets: number[] = [0];
-
-  for (let i = 1; i <= 7; i += 1) {
-    offsets[i] = pdf.length;
-    pdf += `${i} 0 obj\n${objects[i]}\nendobj\n`;
-  }
-
-  const xrefOffset = pdf.length;
-
-  pdf += `xref\n0 8\n0000000000 65535 f \n${offsets
-    .slice(1)
-    .map((offset) => `${String(offset).padStart(10, "0")} 00000 n `)
-    .join("\n")}\ntrailer\n<< /Size 8 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  return new Blob([pdf], { type: "application/pdf" });
+  return pdf.output("blob");
 }
 
 export default function QuoteSummaryPage() {
   const { quoteRef, customerDetails, doors, removeDoor } = useQuote();
   const { items, subtotal, removeItem } = useCart();
+
 
   function removeItemFromCartAndQuote(doorRef: string) {
     const cartItem = items.find((item) => item.doorRef === doorRef);
@@ -222,45 +174,49 @@ export default function QuoteSummaryPage() {
   async function handleDownloadPdf() {
     if (!customerDetails || doors.length === 0) return;
 
-    const address = [
-      customerDetails.addressLine1,
-      customerDetails.addressLine2,
-      customerDetails.city,
-      customerDetails.postcode,
-    ]
-      .filter(Boolean)
-      .join(", ");
+    try {
+      const address = [
+        customerDetails.addressLine1,
+        customerDetails.addressLine2,
+        customerDetails.city,
+        customerDetails.postcode,
+      ]
+        .filter(Boolean)
+        .join(", ");
 
-    const pdfBlob = await buildQuotePdf({
-      quoteRef,
-      customerName: customerDetails.customerName,
-      companyName: customerDetails.companyName,
-      email: customerDetails.email,
-      phone: customerDetails.phone,
-      address,
-      subtotal,
-      doors: doors.map((door) => ({
-        doorRef: door.doorRef,
-        title: door.title,
-        quantity: door.quantity,
-        unitPrice: door.unitPrice,
-        selections: door.selections,
-        technicalNotes: door.technicalNotes,
-      })),
-    });
+      const pdfBlob = await buildQuotePdf({
+        quoteRef,
+        customerName: customerDetails.customerName,
+        companyName: customerDetails.companyName,
+        email: customerDetails.email,
+        phone: customerDetails.phone,
+        address,
+        subtotal,
+        doors: doors.map((door) => ({
+          doorRef: door.doorRef,
+          title: door.title,
+          quantity: door.quantity,
+          unitPrice: door.unitPrice,
+          selections: door.selections,
+          technicalNotes: door.technicalNotes,
+        })),
+      });
 
-    const pdfUrl = URL.createObjectURL(pdfBlob);
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, "_blank", "noopener,noreferrer");
 
-    window.open(pdfUrl, "_blank", "noopener,noreferrer");
+      const link = document.createElement("a");
+      link.href = pdfUrl;
+      link.download = `${quoteRef}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
-    const link = document.createElement("a");
-    link.href = pdfUrl;
-    link.download = `${quoteRef}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    setTimeout(() => URL.revokeObjectURL(pdfUrl), 5000);
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 5000);
+    } catch (error) {
+      console.error(error);
+      window.alert("Unable to generate the quote PDF right now. Please try again.");
+    }
   }
 
   if (!customerDetails) {
@@ -280,24 +236,18 @@ export default function QuoteSummaryPage() {
           </p>
         </div>
 
-        <div className="flex flex-col items-end gap-3">
-          <Link
-            to="/order-online/configure"
-            className="rounded-full border border-[#D7D7D7] px-5 py-3 text-sm font-semibold text-[#111111] transition hover:bg-[#FFF6EE]"
-          >
-            Add another door
-          </Link>
 
+        <div className="flex flex-col items-end gap-3">
+          <ActionButton to="/order-online/configure">
+            Add another door
+          </ActionButton>
           {doors.length > 0 && (
-            <button
-              type="button"
-              onClick={handleDownloadPdf}
-              className="rounded-full border border-[#F47A20] bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#d96614]"
-            >
+            <ActionButton onClick={handleDownloadPdf}>
               Download quote PDF
-            </button>
+            </ActionButton>
           )}
         </div>
+
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">

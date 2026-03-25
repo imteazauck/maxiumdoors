@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useQuote } from "../context/QuoteContext";
 
 function formatMoney(value: number) {
   return `£${value.toLocaleString(undefined, {
@@ -11,7 +12,7 @@ function formatMoney(value: number) {
 export default function BasketDrawer() {
   const navigate = useNavigate();
   const { items, subtotal, isBasketOpen, closeBasket, removeItem, updateQuantity } = useCart();
-
+  const { removeDoor } = useQuote();
   return (
     <>
       {isBasketOpen && (
@@ -52,7 +53,10 @@ export default function BasketDrawer() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => 
+                          { removeItem(item.id)
+                            removeDoor(item.doorRef!)
+                          }}
                         className="text-sm font-medium text-[#6B6B6B] transition hover:text-[#F47A20]"
                       >
                         Remove
