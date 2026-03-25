@@ -9,9 +9,16 @@ function formatMoney(value: number) {
   })}`;
 }
 
+
 export default function QuoteSummaryPage() {
   const { quoteRef, customerDetails, doors, removeDoor } = useQuote();
-  const { items, subtotal } = useCart();
+  const { items, subtotal, removeItem } = useCart();
+
+function removeItemFromCartAndQuote(doorRef: string)
+{
+  removeItem(doorRef);
+  removeDoor(doorRef);
+}
 
   if (!customerDetails) {
     return <Navigate to="/order-online" replace />;
@@ -22,7 +29,7 @@ export default function QuoteSummaryPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">Quote summary</p>
-          <h1 className="mt-2 text-4xl font-semibold text-[#111111]">{quoteRef}</h1>
+          <p className="mt-2 text-m font-semibold text-[#111111]">{quoteRef}</p>
           <p className="mt-2 text-sm text-[#2A2A2A]">
             {customerDetails.customerName} · {customerDetails.addressLine1}, {customerDetails.city}
           </p>
@@ -51,7 +58,9 @@ export default function QuoteSummaryPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold text-[#F47A20]">{formatMoney(door.unitPrice * door.quantity)}</p>
-                    <button type="button" onClick={() => removeDoor(door.doorRef)} className="mt-3 text-sm font-medium text-[#6B6B6B] transition hover:text-[#F47A20]">
+                    <button type="button" 
+                    onClick={() => removeItemFromCartAndQuote(door.doorRef)}                   
+                    className="mt-3 text-sm font-medium text-[#6B6B6B] transition hover:text-[#F47A20]">
                       Remove
                     </button>
                   </div>
@@ -92,15 +101,10 @@ export default function QuoteSummaryPage() {
               <span className="text-sm font-semibold text-[#111111]">Subtotal</span>
               <span className="text-xl font-semibold text-[#F47A20]">{formatMoney(subtotal)}</span>
             </div>
-            <Link
-              to="/order-online/checkout"
-              className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-[#F47A20] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510]"
-            >
-              Proceed to checkout
-            </Link>
           </div>
         </aside>
       </div>
     </section>
   );
 }
+

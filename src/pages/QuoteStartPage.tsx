@@ -40,9 +40,7 @@ export default function QuoteStartPage() {
 
         <div className="mt-6 rounded-[1.5rem] bg-[#FFF9F4] px-5 py-4">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6B6B6B]">
-            Quote reference
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-[#F47A20]">{quoteRef}</p>
+            Quote reference : {quoteRef}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 grid gap-5 sm:grid-cols-2">

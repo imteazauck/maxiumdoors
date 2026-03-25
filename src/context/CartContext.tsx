@@ -89,7 +89,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         details,
       },
     ]);
-    setIsBasketOpen(true);
+    setIsBasketOpen(false);
   }
 
   function removeItem(id: string) {
