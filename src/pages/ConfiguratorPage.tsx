@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import DrawingPanel from "../components/DrawingPanel";
 import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
+import { usePriceVisibility } from "../context/PriceVisibilityContext";
 
 import {
   getConfiguratorState,
@@ -66,6 +67,8 @@ export default function ConfiguratorPage() {
   const [widthError, setWidthError] = useState("");
   const trimmedDoorRef = doorRef.trim();
   const isDoorRefValid = trimmedDoorRef.length > 0;
+  const { showPrices } = usePriceVisibility();
+
   const RANGE_BY_LEAF = {
   single: {
     height: { min: 1000, max: 2960 },
@@ -280,14 +283,14 @@ export default function ConfiguratorPage() {
               <h2 className="mt-2 text-3xl font-semibold text-[#111111]">Build your door</h2>
             </div>
 
-            <div className="rounded-[1.25rem] bg-[#FFF9F4] px-4 py-3 text-right">
+            {showPrices && <div className="rounded-[1.25rem] bg-[#FFF9F4] px-4 py-3 text-right">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6B6B6B]">
                 Live price
               </p>
               <p className="mt-1 text-2xl font-semibold text-[#F47A20]">
                 {state.unitPrice > 0 ? formatMoney(state.unitPrice) : "—"}
               </p>
-            </div>
+            </div>}
           </div>
 
           <div className="mt-8 space-y-5">

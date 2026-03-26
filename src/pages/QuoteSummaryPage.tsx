@@ -4,6 +4,7 @@ import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
 import ActionButton from "../components/ActionButton";
 import { useNavigate } from "react-router-dom"; 
+import { usePriceVisibility } from "../context/PriceVisibilityContext";
 
 function formatMoney(value: number) {
   return `£${value.toLocaleString(undefined, {
@@ -161,6 +162,7 @@ export default function QuoteSummaryPage() {
   const { quoteRef, customerDetails, doors, removeDoor } = useQuote();
   const { items, subtotal, removeItem } = useCart();
   const navigate = useNavigate();
+  const { showPrices } = usePriceVisibility();
 
   function removeItemFromCartAndQuote(doorRef: string) {
     const cartItem = items.find((item) => item.doorRef === doorRef);
@@ -279,9 +281,11 @@ export default function QuoteSummaryPage() {
                     <p className="mt-1 text-sm text-[#2A2A2A]">{door.title}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-[#F47A20]">
-                      {formatMoney(door.unitPrice * door.quantity)}
-                    </p>
+                    {showPrices && (
+                      <p className="text-sm font-semibold text-[#F47A20]">
+                        {formatMoney(door.unitPrice * door.quantity)}
+                      </p>
+                    )}
                     <button
                       type="button"
                       onClick={() => removeItemFromCartAndQuote(door.doorRef)}
@@ -322,17 +326,19 @@ export default function QuoteSummaryPage() {
                 {item.doorRef && (
                   <p className="mt-1 text-sm text-[#2A2A2A]">Door Ref: {item.doorRef}</p>
                 )}
-                <p className="mt-2 text-sm text-[#2A2A2A]">
-                  {formatMoney(item.unitPrice * item.quantity)}
-                </p>
+                {showPrices && (
+                  <p className="mt-2 text-sm text-[#2A2A2A]">
+                    {formatMoney(item.unitPrice * item.quantity)}
+                  </p>
+                )}
               </div>
             ))}
           </div>
 
           <div className="mt-6 border-t border-[#D7D7D7] pt-5">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-[#111111]">Subtotal</span>
-              <span className="text-xl font-semibold text-[#F47A20]">{formatMoney(subtotal)}</span>
+              <span className="text-sm font-semibold text-[#111111]">{showPrices ? "Subtotal" : ""}</span>
+              <span className="text-xl font-semibold text-[#F47A20]">{showPrices ? formatMoney(subtotal) : ""}</span>
             </div>
           </div>
         </aside>

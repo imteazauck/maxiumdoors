@@ -3,6 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import BasketDrawer from "./BasketDrawer";
 import { useCart } from "../context/CartContext";
+import { usePriceVisibility } from "../context/PriceVisibilityContext";
 
 type NavLinkProps = {
   isActive: boolean;
@@ -10,6 +11,7 @@ type NavLinkProps = {
 
 export default function SiteShell({ children }: { children: ReactNode }) {
   const { itemCount, openBasket } = useCart();
+  const { showPrices, toggleShowPrices } = usePriceVisibility();
 
   const navLinkClass = ({ isActive }: NavLinkProps) =>
     [
@@ -46,7 +48,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
               type="button"
               onClick={openBasket}
               aria-label="Open basket"
-              className="relative flex items-center justify-center rounded-full p-2 text-[#111111] transition hover:bg-[#FFF1E6] hover:text-[#F47A20]"
+              className="relative flex items-center justify-center rounded-full border border-[#D7D7D7] bg-[#FFF1E6] p-2 text-[#111111] transition hover:border-[#F47A20] hover:bg-[#F47A20] hover:text-white"
             >
               <ShoppingCart size={22} strokeWidth={1.8} />
               {itemCount > 0 && (
