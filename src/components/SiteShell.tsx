@@ -14,7 +14,7 @@ export default function SiteShell({ children }: { children: ReactNode }) {
   const navLinkClass = ({ isActive }: NavLinkProps) =>
     [
       "rounded-full px-3 py-2 text-sm font-medium transition-colors",
-      isActive ? "bg-[#F47A20] text-white" : "text-[#2A2A2A] hover:bg-[#FFF1E6] hover:text-[#F47A20]",
+      isActive ? "border border-[#F3D3BA] bg-[#FFF1E6] px-5 py-3 text-sm font-semibold text-[#111111]" : "text-[#2A2A2A] hover:bg-[#FFF1E6] hover:text-[#F47A20]",
     ].join(" ");
 
   return (
