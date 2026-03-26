@@ -11,7 +11,7 @@ type NavLinkProps = {
 
 export default function SiteShell({ children }: { children: ReactNode }) {
   const { itemCount, openBasket } = useCart();
-  const { showPrices, toggleShowPrices } = usePriceVisibility();
+  usePriceVisibility();
 
   const navLinkClass = ({ isActive }: NavLinkProps) =>
     [
