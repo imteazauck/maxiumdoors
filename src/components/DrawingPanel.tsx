@@ -37,18 +37,10 @@ export default function DrawingPanel({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">
-            Live drawing
+            Live drawing - Preview panel
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-[#111111]">
-            Preview panel
-          </h2>
+
         </div>
-        <button
-          type="button"
-          className="rounded-full border border-[#F47A20] px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#F47A20] transition hover:bg-[#FFF1E6]"
-        >
-          Zoom
-        </button>
       </div>
 
       <div className="mt-6 rounded-[1.75rem] bg-[#FFF9F4] p-4">

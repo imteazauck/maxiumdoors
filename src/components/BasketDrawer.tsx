@@ -57,7 +57,7 @@ export default function BasketDrawer() {
                           { removeItem(item.id)
                             removeDoor(item.doorRef!)
                           }}
-                        className="text-sm font-medium text-[#6B6B6B] transition hover:text-[#F47A20]"
+                        className="text-sm font-medium px-3  text-[#6B6B6B] transition hover:text-[#F47A20]"
                       >
                         Remove
                       </button>

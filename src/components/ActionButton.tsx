@@ -8,19 +8,21 @@ type ActionButtonProps = {
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const baseButtonStyle =
-  "inline-flex min-w-[220px] items-center justify-center rounded-full border border-[#D7D7D7] bg-transparent px-5 py-3 text-sm font-semibold text-[#4F46E5] font-sans transition duration-200 ease-in-out hover:bg-[#FFF6EE] hover:text-[#4F46E5] focus:outline-none";
-  
+  "inline-flex min-w-[220px] items-center justify-center rounded-full border border-[#D7D7D7] bg-[#FFF1E6] px-5 py-3 text-sm font-semibold text-[#111111] font-sans transition duration-200 ease-in-out hover:bg-[#F47A20] hover:border-[#F47A20] hover:text-white focus:outline-none";
+
 const buttonInlineStyle: CSSProperties = {
-  borderWidth: "1px",
-  borderStyle: "solid",
-  borderColor: "#D7D7D7",
+  background: "transparent",
+  backgroundColor: "transparent",
+  backgroundImage: "none",
+  border: "1px solid #D7D7D7",
   borderRadius: "9999px",
-  backgroundColor: "#FFF6EE",
-  appearance: "none",
-  WebkitAppearance: "none",
-  fontFamily: "sans-serif",  
+  fontFamily: "sans-serif",
   fontSize: "0.875rem",
   fontWeight: 600,
+  appearance: "none",
+  WebkitAppearance: "none",
+  outline: "none",
+  boxShadow: "none",
 };
 
 export default function ActionButton({
@@ -44,7 +46,6 @@ export default function ActionButton({
     <button
       type={type}
       className={combinedClassName}
-      style={buttonInlineStyle}
       {...props}
     >
       {children}

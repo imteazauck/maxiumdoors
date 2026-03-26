@@ -3,6 +3,7 @@ import { jsPDF } from "jspdf";
 import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
 import ActionButton from "../components/ActionButton";
+import { useNavigate } from "react-router-dom"; 
 
 function formatMoney(value: number) {
   return `£${value.toLocaleString(undefined, {
@@ -159,7 +160,7 @@ async function buildQuotePdf({
 export default function QuoteSummaryPage() {
   const { quoteRef, customerDetails, doors, removeDoor } = useQuote();
   const { items, subtotal, removeItem } = useCart();
-
+  const navigate = useNavigate();
 
   function removeItemFromCartAndQuote(doorRef: string) {
     const cartItem = items.find((item) => item.doorRef === doorRef);
@@ -238,9 +239,13 @@ export default function QuoteSummaryPage() {
 
 
         <div className="flex flex-col items-end gap-3">
-          <ActionButton to="/order-online/configure">
+          <ActionButton autoFocus
+           className=" focus:ring-2 focus:ring-[#F47A20]"
+            onClick={() => navigate("/order-online/configure")}
+          >
             Add another door
           </ActionButton>
+
           {doors.length > 0 && (
             <ActionButton onClick={handleDownloadPdf}>
               Download quote PDF
@@ -280,7 +285,7 @@ export default function QuoteSummaryPage() {
                     <button
                       type="button"
                       onClick={() => removeItemFromCartAndQuote(door.doorRef)}
-                      className="mt-3 text-sm font-medium text-[#6B6B6B] transition hover:text-[#F47A20]"
+                      className="mt-3 py-1 px-3 text-sm font-medium text-[#6B6B6B] transition hover:text-[#F47A20]"
                     >
                       Remove
                     </button>
