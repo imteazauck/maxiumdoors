@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import SiteShell from "./components/SiteShell";
 import { CartProvider } from "./context/CartContext";
 import { QuoteProvider } from "./context/QuoteContext";
+import { PriceVisibilityProvider } from "./context/PriceVisibilityContext";
 import ContactPage from "./pages/ContactPage";
 import HelpCentrePage from "./pages/HelpCentrePage";
 import QuoteStartPage from "./pages/QuoteStartPage";
@@ -15,6 +16,7 @@ export default function TradeSteelDoorsStorefront() {
     <BrowserRouter>
       <CartProvider>
         <QuoteProvider>
+          <PriceVisibilityProvider>
           <SiteShell>
             <Routes>
               <Route path="/" element={<QuoteStartPage />} />
@@ -26,6 +28,7 @@ export default function TradeSteelDoorsStorefront() {
               <Route path="/order-online/thank-you" element={<ThankYouPage />} />
             </Routes>
           </SiteShell>
+          </PriceVisibilityProvider>
         </QuoteProvider>
       </CartProvider>
     </BrowserRouter>

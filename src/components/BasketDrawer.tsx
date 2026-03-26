@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
+import { usePriceVisibility } from "../context/PriceVisibilityContext";
 
 function formatMoney(value: number) {
   return `£${value.toLocaleString(undefined, {
@@ -13,6 +14,7 @@ export default function BasketDrawer() {
   const navigate = useNavigate();
   const { items, subtotal, isBasketOpen, closeBasket, removeItem, updateQuantity } = useCart();
   const { removeDoor } = useQuote();
+  const { showPrices } = usePriceVisibility();
   return (
     <>
       {isBasketOpen && (
@@ -46,7 +48,7 @@ export default function BasketDrawer() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h3 className="text-base font-semibold text-[#111111]">{item.name}</h3>
-                        <p className="mt-1 text-sm text-[#2A2A2A]">{item.priceLabel}</p>
+                        <p className="mt-1 text-sm text-[#2A2A2A]">{showPrices && item.priceLabel}</p>
                         {item.colour && <p className="mt-1 text-sm text-[#2A2A2A]">Colour: {item.colour}</p>}
                         {item.quoteRef && <p className="mt-1 text-sm text-[#2A2A2A]">Quote Ref: {item.quoteRef}</p>}
                         {item.doorRef && <p className="mt-1 text-sm text-[#2A2A2A]">Door Ref: {item.doorRef}</p>}
@@ -77,7 +79,7 @@ export default function BasketDrawer() {
                         <span className="min-w-[2.5rem] text-center text-sm font-medium">{item.quantity}</span>
                         <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-4 py-2 text-sm font-semibold">+</button>
                       </div>
-                      <p className="text-sm font-semibold text-[#F47A20]">{formatMoney(item.unitPrice * item.quantity)}</p>
+                      {showPrices && <p className="text-sm font-semibold text-[#F47A20]">{formatMoney(item.unitPrice * item.quantity)}</p>}
                     </div>
                   </article>
                 ))}
@@ -87,8 +89,12 @@ export default function BasketDrawer() {
 
           <div className="border-t border-[#D7D7D7] px-6 py-5">
             <div className="flex items-center justify-between text-sm font-semibold text-[#111111]">
-              <span>Subtotal</span>
-              <span className="text-[#F47A20]">{formatMoney(subtotal)}</span>
+              {showPrices && (
+                <>
+                  <span>Subtotal</span>
+                  <span className="text-[#F47A20]">{formatMoney(subtotal)}</span>
+                </>
+              )}
             </div>
             <button
               type="button"
