@@ -1,4 +1,6 @@
-import type { ConfiguredDoor, CustomerDetails } from "../context/QuoteContext";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:7071";
+
 
 export type CardDetailsInput = {
   cardholderName: string;
@@ -27,28 +29,56 @@ export type DeliveryDetailsInput = {
   estimatedDeliveryDate: string;
 };
 
+export type CustomerDetailsInput = {
+  customerName: string;
+  companyName?: string;
+  email: string;
+  phone?: string;
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  postcode: string;
+};
+
+export type DoorSelectionsInput = {
+  leafType?: string;
+  handing?: string;
+  structuralHeight?: string;
+  structuralWidth?: string;
+  doorType?: string;
+  lockType?: string;
+  colour?: string;
+};
+
+export type DoorInput = {
+  doorRef: string;
+  title: string;
+  selections: DoorSelectionsInput;
+  unitPrice: number;
+  quantity: number;
+  technicalNotes: string[];
+};
+
 export type CheckoutPayload = {
   quoteRef: string;
-  customerDetails: CustomerDetails;
-  doors: ConfiguredDoor[];
+  customerDetails: CustomerDetailsInput;
+  doors: DoorInput[];
   subtotal: number;
   deliveryDetails: DeliveryDetailsInput;
   payment: CardDetailsInput;
 };
 
 export type OrderConfirmation = {
-  orderId: string;
-  quoteRef: string;
+  id: string;
+  orderNumber: string;
+  status: string;
   createdAt: string;
-  customerName: string;
-  email: string;
-  subtotal: number;
-  doorCount: number;
-  paymentLast4: string;
+  quoteRef: string;
+  message: string;
 };
 
 export async function submitOrder(payload: CheckoutPayload): Promise<OrderConfirmation> {
-  const response = await fetch("/api/orders", {
+  const response = await fetch(`${API_BASE_URL}/api/orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

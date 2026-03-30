@@ -1,7 +1,14 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  useCallback,
+  type ReactNode,
+} from "react";
 import type { Product } from "../data/products";
 
-type CartItem = {
+export type CartItem = {
   id: string;
   productId: string;
   name: string;
@@ -49,12 +56,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isBasketOpen, setIsBasketOpen] = useState(false);
 
-  function addItem({ product, quantity = 1, colour }: AddToCartInput) {
+  const openBasket = useCallback(() => {
+    setIsBasketOpen(true);
+  }, []);
+
+  const closeBasket = useCallback(() => {
+    setIsBasketOpen(false);
+  }, []);
+
+  const addItem = useCallback(({ product, quantity = 1, colour }: AddToCartInput) => {
     setItems((current) => {
-      const existing = current.find((item) => item.productId === product.id && item.colour === colour);
+      const existing = current.find(
+        (item) => item.productId === product.id && item.colour === colour,
+      );
+
       if (existing) {
         return current.map((item) =>
-          item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item,
+          item.id === existing.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item,
         );
       }
 
@@ -71,43 +91,52 @@ export function CartProvider({ children }: { children: ReactNode }) {
         },
       ];
     });
+
     setIsBasketOpen(true);
-  }
+  }, []);
 
-  function addConfiguredItem({ quoteRef, doorRef, name, unitPrice, quantity, details }: AddConfiguredItemInput) {
-    setItems((current) => [
-      ...current,
-      {
-        id: `${quoteRef}-${doorRef}-${crypto.randomUUID()}`,
-        productId: "configured-door",
-        name,
-        priceLabel: `£${unitPrice.toFixed(2)}`,
-        unitPrice,
-        quantity,
-        quoteRef,
-        doorRef,
-        details,
-      },
-    ]);
-    setIsBasketOpen(false);
-  }
+  const addConfiguredItem = useCallback(
+    ({ quoteRef, doorRef, name, unitPrice, quantity, details }: AddConfiguredItemInput) => {
+      setItems((current) => [
+        ...current,
+        {
+          id: `${quoteRef}-${doorRef}-${crypto.randomUUID()}`,
+          productId: "configured-door",
+          name,
+          priceLabel: `£${unitPrice.toFixed(2)}`,
+          unitPrice,
+          quantity,
+          quoteRef,
+          doorRef,
+          details,
+        },
+      ]);
 
-  function removeItem(id: string) {
+      setIsBasketOpen(false);
+    },
+    [],
+  );
+
+  const removeItem = useCallback((id: string) => {
     setItems((current) => current.filter((item) => item.id !== id));
-  }
+  }, []);
 
-  function updateQuantity(id: string, quantity: number) {
-    if (quantity <= 0) {
-      removeItem(id);
-      return;
-    }
-    setItems((current) => current.map((item) => (item.id === id ? { ...item, quantity } : item)));
-  }
+  const updateQuantity = useCallback((id: string, quantity: number) => {
+    setItems((current) => {
+      if (quantity <= 0) {
+        return current.filter((item) => item.id !== id);
+      }
 
-  function clearCart() {
+      return current.map((item) =>
+        item.id === id ? { ...item, quantity } : item,
+      );
+    });
+  }, []);
+
+  const clearCart = useCallback(() => {
     setItems([]);
     setIsBasketOpen(false);
-  }
+  }, []);
 
   const value = useMemo(() => {
     const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
@@ -118,15 +147,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itemCount,
       subtotal,
       isBasketOpen,
-      openBasket: () => setIsBasketOpen(true),
-      closeBasket: () => setIsBasketOpen(false),
+      openBasket,
+      closeBasket,
       addItem,
       addConfiguredItem,
       removeItem,
       updateQuantity,
       clearCart,
     };
-  }, [isBasketOpen, items]);
+  }, [
+    items,
+    isBasketOpen,
+    openBasket,
+    closeBasket,
+    addItem,
+    addConfiguredItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+  ]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

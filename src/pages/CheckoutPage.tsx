@@ -1,7 +1,10 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
+import { mapOrderConfirmationEmailPayload } from "../utils/mapOrderConfirmationEmailPayload";
+import { buildOrderConfirmationEmail } from "../utils/buildOrderConfirmationEmail";
+
 import {
   submitOrder,
   type CardDetailsInput,
@@ -74,13 +77,13 @@ function isDeliveryDetailsComplete(details: DeliveryDetailsInput) {
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const { quoteRef, customerDetails, doors, resetQuote } = useQuote();
-  const { subtotal, items, clearCart } = useCart();
+  const { quoteRef, customerDetails, doors } = useQuote();
+  const { subtotal, items } = useCart();
 
   const [cardDetails, setCardDetails] = useState<CardDetailsInput>(initialCardValues);
   const [deliveryDetails, setDeliveryDetails] =
     useState<DeliveryDetailsInput>(initialDeliveryDetails);
-  const [error, setError] = useState("");
+  const [error, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const doorCount = useMemo(() => doors.reduce((sum, door) => sum + door.quantity, 0), [doors]);
@@ -107,42 +110,48 @@ export default function CheckoutPage() {
     setDeliveryDetails((current) => ({ ...current, [key]: value }));
   }
 
-  async function handleSubmit(event: FormEvent) {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!isDeliveryComplete) {
-      setError("Please complete the delivery details before placing your order.");
-      return;
-    }
-
-    setError("");
-    setIsSubmitting(true);
-
     try {
-      const confirmation = await submitOrder({
+      setIsSubmitting(true);
+      setErrorMessage("");
+
+      const payload = {
         quoteRef,
         customerDetails: activeCustomerDetails,
         doors,
         subtotal,
         deliveryDetails,
         payment: {
-          ...cardDetails,
+          cardholderName: cardDetails.cardholderName,
           cardNumber: normaliseCardNumber(cardDetails.cardNumber),
           expiry: cardDetails.expiry,
-          cvv: cardDetails.cvv.replace(/\D/g, "").slice(0, 4),
+          cvv: cardDetails.cvv,
+        },
+      };
+
+      const confirmation = await submitOrder(payload);
+      const emailPayload = mapOrderConfirmationEmailPayload(payload, confirmation);
+      const emailBody = buildOrderConfirmationEmail(emailPayload);
+
+      console.log("Submitting payload:", payload);
+      console.log("Email payload:", emailPayload);
+      console.log("Email body:", emailBody);
+
+      navigate("/order-online/thank-you", {
+        state: {
+          confirmation,
         },
       });
-
-      sessionStorage.setItem("lastOrderConfirmation", JSON.stringify(confirmation));
-      clearCart();
-      resetQuote();
-      navigate("/order-online/thank-you");
-    } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Unable to submit your order.");
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unable to submit order."
+      );
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">

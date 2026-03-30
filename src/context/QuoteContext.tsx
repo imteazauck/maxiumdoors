@@ -1,4 +1,11 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  useCallback,
+  type ReactNode,
+} from "react";
 
 export type CustomerDetails = {
   customerName: string;
@@ -49,36 +56,58 @@ export function QuoteProvider({ children }: { children: ReactNode }) {
   const [customerDetails, setCustomerDetails] = useState<CustomerDetails | null>(null);
   const [doors, setDoors] = useState<ConfiguredDoor[]>([]);
 
-  function startQuote(details: CustomerDetails) {
-    setCustomerDetails(details);
-    if (!quoteRef) {
-      setQuoteRef(buildQuoteRef());
-    }
-  }
+  const startQuote = useCallback(
+    (details: CustomerDetails) => {
+      setCustomerDetails(details);
+      setQuoteRef((current) => current || buildQuoteRef());
+    },
+    [],
+  );
 
-  function addDoor(door: ConfiguredDoor) {
+  const addDoor = useCallback((door: ConfiguredDoor) => {
     setDoors((current) => [...current, door]);
     return door;
-  }
+  }, []);
 
-  function removeDoor(doorRef: string) {
+  const removeDoor = useCallback((doorRef: string) => {
     setDoors((current) => current.filter((door) => door.doorRef !== doorRef));
-  }
+  }, []);
 
-  function doorRefExists(doorRef: string) {
-    const normalized = doorRef.trim().toLowerCase();
-    return doors.some((door) => door.doorRef.trim().toLowerCase() === normalized);
-  }
+  const doorRefExists = useCallback(
+    (doorRef: string) => {
+      const normalized = doorRef.trim().toLowerCase();
+      return doors.some((door) => door.doorRef.trim().toLowerCase() === normalized);
+    },
+    [doors],
+  );
 
-  function resetQuote() {
+  const resetQuote = useCallback(() => {
     setCustomerDetails(null);
     setDoors([]);
     setQuoteRef(buildQuoteRef());
-  }
+  }, []);
 
   const value = useMemo(
-    () => ({ quoteRef, customerDetails, doors, startQuote, addDoor, removeDoor, doorRefExists, resetQuote }),
-    [quoteRef, customerDetails, doors],
+    () => ({
+      quoteRef,
+      customerDetails,
+      doors,
+      startQuote,
+      addDoor,
+      removeDoor,
+      doorRefExists,
+      resetQuote,
+    }),
+    [
+      quoteRef,
+      customerDetails,
+      doors,
+      startQuote,
+      addDoor,
+      removeDoor,
+      doorRefExists,
+      resetQuote,
+    ],
   );
 
   return <QuoteContext.Provider value={value}>{children}</QuoteContext.Provider>;
