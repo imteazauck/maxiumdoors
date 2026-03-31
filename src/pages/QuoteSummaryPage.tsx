@@ -1,9 +1,8 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
 import ActionButton from "../components/ActionButton";
-import { useNavigate } from "react-router-dom"; 
 import { usePriceVisibility } from "../context/PriceVisibilityContext";
 
 function formatMoney(value: number) {
@@ -38,6 +37,7 @@ async function buildQuotePdf({
   phone,
   address,
   subtotal,
+  showPrices,
   doors,
 }: {
   quoteRef: string;
@@ -47,6 +47,7 @@ async function buildQuotePdf({
   phone: string;
   address: string;
   subtotal: number;
+  showPrices: boolean;
   doors: {
     doorRef: string;
     title: string;
@@ -114,7 +115,11 @@ async function buildQuotePdf({
   currentY += 24;
 
   doors.forEach((door, index) => {
-    ensureSpace(80 + Object.keys(door.selections).length * 16 + (door.technicalNotes?.length ?? 0) * 16);
+    ensureSpace(
+      80 +
+        Object.keys(door.selections).length * 16 +
+        (door.technicalNotes?.length ?? 0) * 16,
+    );
 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(13);
@@ -124,7 +129,7 @@ async function buildQuotePdf({
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(11);
     pdf.text(
-      `Quantity: ${door.quantity}    Total: ${formatMoney(door.unitPrice * door.quantity)}`,
+      `Quantity: ${door.quantity}${showPrices ? `    Total: ${formatMoney(door.unitPrice * door.quantity)}` : ""}`,
       marginX + 10,
       currentY,
     );
@@ -150,10 +155,12 @@ async function buildQuotePdf({
     currentY += 12;
   });
 
-  ensureSpace(40);
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(15);
-  pdf.text(`Subtotal: ${formatMoney(subtotal)}`, marginX, currentY);
+  if (showPrices) {
+    ensureSpace(40);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(15);
+    pdf.text(`Subtotal: ${formatMoney(subtotal)}`, marginX, currentY);
+  }
 
   return pdf.output("blob");
 }
@@ -195,6 +202,7 @@ export default function QuoteSummaryPage() {
         phone: customerDetails.phone,
         address,
         subtotal,
+        showPrices,
         doors: doors.map((door) => ({
           doorRef: door.doorRef,
           title: door.title,
@@ -239,10 +247,10 @@ export default function QuoteSummaryPage() {
           </p>
         </div>
 
-
         <div className="flex flex-col items-end gap-3">
-          <ActionButton autoFocus
-           className=" focus:ring-2 focus:ring-[#F47A20]"
+          <ActionButton
+            autoFocus
+            className="focus:ring-2 focus:ring-[#F47A20]"
             onClick={() => navigate("/order-online/configure")}
           >
             Add another door
@@ -254,7 +262,6 @@ export default function QuoteSummaryPage() {
             </ActionButton>
           )}
         </div>
-
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
@@ -337,8 +344,12 @@ export default function QuoteSummaryPage() {
 
           <div className="mt-6 border-t border-[#D7D7D7] pt-5">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-[#111111]">{showPrices ? "Subtotal" : ""}</span>
-              <span className="text-xl font-semibold text-[#F47A20]">{showPrices ? formatMoney(subtotal) : ""}</span>
+              <span className="text-sm font-semibold text-[#111111]">
+                {showPrices ? "Subtotal" : ""}
+              </span>
+              <span className="text-xl font-semibold text-[#F47A20]">
+                {showPrices ? formatMoney(subtotal) : ""}
+              </span>
             </div>
           </div>
         </aside>
