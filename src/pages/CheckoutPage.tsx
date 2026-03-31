@@ -4,6 +4,7 @@ import { useCart } from "../context/CartContext";
 import { useQuote } from "../context/QuoteContext";
 import { mapOrderConfirmationEmailPayload } from "../utils/mapOrderConfirmationEmailPayload";
 import { buildOrderConfirmationEmail } from "../utils/buildOrderConfirmationEmail";
+import { usePriceVisibility } from "../context/PriceVisibilityContext";
 
 import {
   submitOrder,
@@ -63,6 +64,7 @@ const initialDeliveryDetails: DeliveryDetailsInput = {
   estimatedDeliveryDate: "",
 };
 
+
 function isDeliveryDetailsComplete(details: DeliveryDetailsInput) {
   return Boolean(
     details.addressLine1.trim() &&
@@ -88,6 +90,7 @@ export default function CheckoutPage() {
 
   const doorCount = useMemo(() => doors.reduce((sum, door) => sum + door.quantity, 0), [doors]);
   const isDeliveryComplete = isDeliveryDetailsComplete(deliveryDetails);
+  const { showPrices } = usePriceVisibility();
 
   if (!customerDetails) {
     return <Navigate to="/" replace />;
@@ -116,6 +119,7 @@ export default function CheckoutPage() {
     try {
       setIsSubmitting(true);
       setErrorMessage("");
+
 
       const payload = {
         quoteRef,
@@ -482,9 +486,7 @@ export default function CheckoutPage() {
               Card details
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-[#111111]">Payment information</h2>
-            <p className="mt-2 text-sm text-[#2A2A2A]">
-              This demo captures the card form and only stores masked card data on the server.
-            </p>
+
 
             {!isDeliveryComplete && (
               <p className="mt-2 text-sm text-[#6B6B6B]">
@@ -580,7 +582,9 @@ export default function CheckoutPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6B6B6B]">
             Order summary
           </p>
-          <h2 className="mt-2 text-2xl font-semibold text-[#111111]">Review before payment</h2>
+          {showPrices && (
+            <h2 className="mt-2 text-2xl font-semibold text-[#111111]">Review before payment</h2>
+          )}
 
           <div className="mt-6 space-y-4">
             {doors.map((door) => (
@@ -595,7 +599,7 @@ export default function CheckoutPage() {
                   </div>
 
                   <p className="text-sm font-semibold text-[#F47A20]">
-                    {formatMoney(door.unitPrice * door.quantity)}
+                    {showPrices && formatMoney(door.unitPrice * door.quantity)}
                   </p>
                 </div>
 
@@ -625,8 +629,8 @@ export default function CheckoutPage() {
             </div>
 
             <div className="flex items-center justify-between text-base font-semibold text-[#111111]">
-              <span>Total</span>
-              <span className="text-[#F47A20]">{formatMoney(subtotal)}</span>
+              {showPrices && <span>Total</span>}
+              {showPrices && <span className="text-[#F47A20]">{formatMoney(subtotal)}</span>}
             </div>
           </div>
         </aside>
