@@ -29,9 +29,9 @@ export default function QuoteStartPage() {
   }
 
   return (
-    <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="rounded-[2rem] border border-[#D7D7D7] bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">
+<section className="w-full px-6 py-16 sm:px-8 lg:px-12 lg:py-24">
+  <div className="mx-auto w-full max-w-[1600px]">
+<div className="rounded-[2rem] border border-black/5 bg-white p-8 shadow-sm sm:p-10 lg:p-12">        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#6B6B6B]">
           Order online
         </p>
         <h2 className="mt-0 text-2xl font-semibold text-[#111111] tracking-tight">
@@ -84,6 +84,7 @@ export default function QuoteStartPage() {
           </div>
         </form>
       </div>
+     </div>
     </section>
   );
 }

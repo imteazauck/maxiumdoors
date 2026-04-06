@@ -1,5 +1,5 @@
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:7071";
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:7052/api";
 
 
 export type CardDetailsInput = {
@@ -78,7 +78,7 @@ export type OrderConfirmation = {
 };
 
 export async function submitOrder(payload: CheckoutPayload): Promise<OrderConfirmation> {
-  const response = await fetch(`${API_BASE_URL}/api/orders`, {
+  const response = await fetch(`${API_BASE_URL}/orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
