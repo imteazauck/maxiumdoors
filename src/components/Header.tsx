@@ -8,6 +8,7 @@ type NavLinkProps = {
 };
 
 type HeaderProps = {
+  hideMenu?: boolean;
 };
 
 const navLinkClass = ({ isActive }: NavLinkProps) =>
