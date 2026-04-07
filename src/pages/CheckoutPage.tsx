@@ -481,6 +481,8 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+            
+          {showPrices && (
           <div className="mt-10 rounded-[1.5rem] border border-[#D7D7D7] bg-white p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6B6B6B]">
               Card details
@@ -556,6 +558,7 @@ export default function CheckoutPage() {
               </label>
             </div>
           </div>
+          )}
 
           {error && (
             <p className="mt-4 rounded-[1rem] bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -573,7 +576,7 @@ export default function CheckoutPage() {
               disabled={isSubmitting || !isDeliveryComplete}
               className="rounded-full bg-[#F47A20] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#D96510] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? "Processing..." : "Place order"}
+              {isSubmitting ? "Processing..." : "Submit order"}
             </button>
           </div>
         </form>
