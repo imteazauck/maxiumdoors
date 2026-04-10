@@ -1,34 +1,39 @@
-import type { AdminSession } from "./types";
+export type UserRole = "admin" | "reseller";
 
-const SESSION_KEY = "adminSession";
+export type AuthUser = {
+  id: string;
+  email: string;
+  role: UserRole;
+  displayName?: string;
+  resellerId?: string | null;
+};
 
-export function getAdminSession(): AdminSession | null {
-  const raw = localStorage.getItem(SESSION_KEY);
-  if (!raw) return null;
+export type AuthSession = {
+  token: string;
+  user: AuthUser;
+};
+
+const STORAGE_KEY = "maxiumdoors-auth-session";
+
+export function getAuthSession(): AuthSession | null {
+  const raw = localStorage.getItem(STORAGE_KEY);
+
+  if (!raw) {
+    return null;
+  }
 
   try {
-    const session = JSON.parse(raw) as AdminSession;
-    if (!session.token || !session.expiresAt) {
-      localStorage.removeItem(SESSION_KEY);
-      return null;
-    }
-
-    if (new Date(session.expiresAt).getTime() <= Date.now()) {
-      localStorage.removeItem(SESSION_KEY);
-      return null;
-    }
-
-    return session;
+    return JSON.parse(raw) as AuthSession;
   } catch {
-    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(STORAGE_KEY);
     return null;
   }
 }
 
-export function setAdminSession(session: AdminSession) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+export function setAuthSession(session: AuthSession) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
 }
 
-export function clearAdminSession() {
-  localStorage.removeItem(SESSION_KEY);
+export function clearAuthSession() {
+  localStorage.removeItem(STORAGE_KEY);
 }

@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import type { FormEvent } from "react";
 
-export default function AdminLoginPage() {
+export default function ResellerLoginPage() {
   const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -11,8 +12,8 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  if (isAuthenticated && user?.role === "admin") {
-    return <Navigate to="/admin" replace />;
+  if (isAuthenticated && user?.role === "reseller") {
+    return <Navigate to="/resell" replace />;
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -21,14 +22,8 @@ export default function AdminLoginPage() {
     setIsSubmitting(true);
 
     try {
-      const signedInUser = await login(email, password);
-
-      if (signedInUser.role !== "admin") {
-        setError("This account does not have admin access.");
-        return;
-      }
-
-      navigate("/admin", { replace: true });
+      await login(email, password);
+      navigate("/resell");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed.");
     } finally {
@@ -40,7 +35,7 @@ export default function AdminLoginPage() {
     <section className="mx-auto max-w-xl px-6 py-16">
       <div className="rounded-[2rem] border border-[#D7D7D7] bg-white p-8 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#6B6B6B]">
-          Admin
+          Reseller
         </p>
         <h1 className="mt-2 text-3xl font-semibold text-[#111111]">Sign in</h1>
 

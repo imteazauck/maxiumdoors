@@ -1,7 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchOrder, takePayment } from "../admin/api";
-import { clearAdminSession } from "../admin/session";
+import { clearAuthSession } from "../admin/session";
 import type { AdminOrder } from "../admin/types";
 
 function formatMoney(value?: number) {
@@ -46,9 +46,8 @@ export default function AdminOrderDetailPage() {
         const message =
           err instanceof Error ? err.message : "Unable to load order.";
         setError(message);
-
         if (message.includes("sign in again")) {
-          clearAdminSession();
+          clearAuthSession();
           navigate("/admin/login", { replace: true });
         }
       } finally {

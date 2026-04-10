@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchOrders } from "../admin/api";
-import { clearAdminSession, getAdminSession } from "../admin/session";
+import { clearAuthSession, getAuthSession } from "../admin/session";
 import type { OrderSummary } from "../admin/types";
 
 
@@ -21,8 +21,7 @@ function formatDate(value: string) {
 }
 
 export default function AdminDashboardPage() {
-  const session = getAdminSession();
-  const navigate = useNavigate();
+  const [session, setSession] = useState(getAuthSession());  const navigate = useNavigate();
   const [status, setStatus] = useState("pending");
   const [paymentStatus, setPaymentStatus] = useState("all");
   const [search, setSearch] = useState("");
@@ -37,23 +36,30 @@ export default function AdminDashboardPage() {
     try {
       const results = await fetchOrders({ status, paymentStatus, search: search.trim() || undefined });
       setOrders(results);
-      if (results) {
-              console.log(orders);
+    }
+    catch (err) {
+     const message = err instanceof Error ? err.message : "Unable to load orders.";
+
+      if (message.toLowerCase().includes("unauthorized")) {
+        return;
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unable to load orders.";
+
       setError(message);
+
       if (message.includes("sign in again")) {
         navigate("/admin/login", { replace: true });
       }
-    } finally {
-      setLoading(false);
-    }
+    } 
+    finally {
+        setLoading(false);
+      }
   };
 
-  useEffect(() => {
-    void loadOrders();
-  }, [status, paymentStatus]);
+useEffect(() => {
+  if (!session) return; 
+
+  void loadOrders();
+}, [status, paymentStatus, session]);
 
   const summary = useMemo(() => {
     const pendingCount = orders.filter((order) => order.orderStatus === "pending").length;
@@ -61,10 +67,11 @@ export default function AdminDashboardPage() {
     return { pendingCount, paidCount, total: orders.length };
   }, [orders]);
 
-  const handleLogout = () => {
-    clearAdminSession();
-    navigate("/admin/login", { replace: true });
-  };
+const handleLogout = () => {
+  clearAuthSession();
+  setSession(null); 
+  navigate("/admin/login", { replace: true });
+};
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-12">
@@ -79,7 +86,7 @@ export default function AdminDashboardPage() {
 
         <div className="flex flex-wrap gap-3">
           <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600 shadow-sm">
-            Signed in as <span className="font-semibold text-zinc-900">{session?.username}</span>
+            Signed in as <span className="font-semibold text-zinc-900">{session?.user.displayName}</span>
           </div>
           <button
             type="button"
