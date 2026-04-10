@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { fetchOrders } from "../admin/api";
-import { clearAuthSession, getAuthSession } from "../admin/session";
 import type { OrderSummary } from "../admin/types";
+import { useAuth } from "../context/AuthContext";
 
 
 function formatMoney(value?: number | null) {
@@ -21,7 +21,8 @@ function formatDate(value: string) {
 }
 
 export default function AdminDashboardPage() {
-  const [session, setSession] = useState(getAuthSession());  const navigate = useNavigate();
+  const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
   const [status, setStatus] = useState("pending");
   const [paymentStatus, setPaymentStatus] = useState("all");
   const [search, setSearch] = useState("");
@@ -41,6 +42,8 @@ export default function AdminDashboardPage() {
      const message = err instanceof Error ? err.message : "Unable to load orders.";
 
       if (message.toLowerCase().includes("unauthorized")) {
+        logout();
+        navigate("/admin/login", { replace: true });
         return;
       }
 
@@ -56,10 +59,10 @@ export default function AdminDashboardPage() {
   };
 
 useEffect(() => {
-  if (!session) return; 
+  if (!isAuthenticated) return;
 
   void loadOrders();
-}, [status, paymentStatus, session]);
+}, [status, paymentStatus, isAuthenticated]);
 
   const summary = useMemo(() => {
     const pendingCount = orders.filter((order) => order.orderStatus === "pending").length;
@@ -68,9 +71,8 @@ useEffect(() => {
   }, [orders]);
 
 const handleLogout = () => {
-  clearAuthSession();
-  setSession(null); 
-  navigate("/admin/login", { replace: true });
+  logout();
+  return <Navigate to="/admin/login" replace state={{ from: location }} />;
 };
 
   return (
@@ -86,7 +88,7 @@ const handleLogout = () => {
 
         <div className="flex flex-wrap gap-3">
           <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600 shadow-sm">
-            Signed in as <span className="font-semibold text-zinc-900">{session?.user.displayName}</span>
+            Signed in as <span className="font-semibold text-zinc-900">{user?.displayName}</span>
           </div>
           <button
             type="button"
