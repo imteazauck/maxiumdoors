@@ -16,6 +16,9 @@ import ThankYouPage from "./pages/ThankYouPage";
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminOrderDetailPage from "./pages/AdminOrderDetailPage";
+import AdminResellersPage from "./pages/AdminResellersPage";
+import AdminResellerFormPage from "./pages/AdminResellerFormPage";
+import AdminResellerPricingPage from "./pages/AdminResellerPricingPage";
 import AdminRoute from "./admin/AdminRoute";
 
 import ResellerLoginPage from "./pages/ResellerLoginPage";
@@ -44,6 +47,10 @@ export default function TradeSteelDoorsStorefront() {
                   <Route element={<SiteShell />}>
                     <Route path="/admin" element={<AdminDashboardPage />} />
                     <Route path="/admin/orders/:orderNumber" element={<AdminOrderDetailPage />} />
+                    <Route path="/admin/resellers" element={<AdminResellersPage />} />
+                    <Route path="/admin/resellers/new" element={<AdminResellerFormPage />} />
+                    <Route path="/admin/resellers/:resellerId/edit" element={<AdminResellerFormPage />} />
+                    <Route path="/admin/resellers/:resellerId/pricing" element={<AdminResellerPricingPage />} />
                   </Route>
                 </Route>
 

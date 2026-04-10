@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchOrders } from "../admin/api";
 import type { OrderSummary } from "../admin/types";
 import { useAuth } from "../context/AuthContext";
@@ -72,7 +72,7 @@ useEffect(() => {
 
 const handleLogout = () => {
   logout();
-  return <Navigate to="/admin/login" replace state={{ from: location }} />;
+  navigate("/admin/login", { replace: true });
 };
 
   return (
@@ -87,6 +87,12 @@ const handleLogout = () => {
         </div>
 
         <div className="flex flex-wrap gap-3">
+          <Link
+            to="/admin/resellers"
+            className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Manage resellers
+          </Link>
           <div className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600 shadow-sm">
             Signed in as <span className="font-semibold text-zinc-900">{user?.displayName}</span>
           </div>
