@@ -6,9 +6,8 @@ import type {
 } from './types';
 
 const API_BASE_URL =
-  import.meta.env.VITE_RESELLER_API_BASE_URL?.replace(/\/$/, '') ??
-   "http://localhost:7052/api";
-
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
+  "http://localhost:7052/api";
 const STORAGE_KEY = 'maxiumdoors-auth-session';
 
 type StoredSession = {
