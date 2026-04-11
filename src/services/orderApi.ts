@@ -1,6 +1,20 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:7052/api";
 
+const STORAGE_KEY = "maxiumdoors-auth-session";
+
+function getStoredToken() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as { token?: string | null };
+    return parsed.token ?? null;
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+}
 
 export type CardDetailsInput = {
   cardholderName: string;
@@ -78,11 +92,16 @@ export type OrderConfirmation = {
 };
 
 export async function submitOrder(payload: CheckoutPayload): Promise<OrderConfirmation> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  const token = getStoredToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
   const response = await fetch(`${API_BASE_URL}/orders`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
     body: JSON.stringify(payload),
   });
 

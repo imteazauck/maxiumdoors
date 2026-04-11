@@ -1,6 +1,4 @@
-import { clearAdminSession, getAdminSession } from "./session";
 import type {
-  AdminLoginResponse,
   AdminOrder,
   DoorItem,
   TakePaymentPayload,
@@ -10,9 +8,37 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ??
   "http://localhost:7052/api";
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const session = getAdminSession();
+const STORAGE_KEY = "maxiumdoors-auth-session";
 
+type StoredSession = {
+  token: string | null;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+    displayName: string;
+    resellerId?: string | null;
+  } | null;
+};
+
+function getStoredSession(): StoredSession | null {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw) as StoredSession;
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+}
+
+function clearStoredSession() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const session = getStoredSession();
   const headers = new Headers(init?.headers);
 
   if (session?.token) {
@@ -22,7 +48,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (init?.body) {
     headers.set("Content-Type", "application/json");
   }
- console.log(`${API_BASE_URL}${path}`);
+
+  headers.set("Accept", "application/json");
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -30,16 +57,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (response.status === 401) {
-    clearAdminSession();
+    clearStoredSession();
     throw new Error("Your admin session has expired. Please sign in again.");
   }
 
   if (!response.ok) {
     const payload = (await response.json().catch(() => null)) as
-      | { error?: string }
+      | { error?: string; Error?: string; message?: string; Message?: string }
       | null;
 
-    throw new Error(payload?.error ?? "Request failed.");
+    throw new Error(
+      payload?.error ??
+      payload?.Error ??
+      payload?.message ??
+      payload?.Message ??
+      "Request failed."
+    );
   }
 
   return (await response.json()) as T;
@@ -105,13 +138,6 @@ function mapAdminOrder(item: unknown): AdminOrder {
     createdAt: asString(source.createdAt ?? source.CreatedAt),
     updatedAt: asString(source.updatedAt ?? source.UpdatedAt),
   };
-}
-
-export async function loginAdmin(username: string, password: string) {
-  return request<AdminLoginResponse>("/backoffice/login", {
-    method: "POST",
-    body: JSON.stringify({ username, password }),
-  });
 }
 
 export async function fetchOrders(filters: {
