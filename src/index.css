@@ -15,16 +15,16 @@
   box-sizing: border-box;
 }
 
-html {
-  display: flex;
-  justify-content: center;
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
   min-height: 100vh;
 }
 
@@ -58,16 +58,3 @@ button:focus,
 button:focus-visible {
   outline: none;
 }
-
-/* @media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color:white;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: green;
-  }
-} */
