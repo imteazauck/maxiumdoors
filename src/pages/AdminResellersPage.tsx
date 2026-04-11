@@ -1,26 +1,36 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ensureResellerStore, deleteReseller, listResellers } from "../resellers/storage";
-import type { Reseller } from "../resellers/types";
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { deleteReseller, listResellers } from '../resellers/api';
+import type { Reseller } from '../resellers/types';
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("en-GB", {
-    dateStyle: "medium",
+  if (!value) return '—';
+  return new Date(value).toLocaleDateString('en-GB', {
+    dateStyle: 'medium',
   });
 }
 
 export default function AdminResellersPage() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const [resellers, setResellers] = useState<Reseller[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const load = () => {
-    ensureResellerStore();
-    setResellers(listResellers());
+  const load = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      setResellers(await listResellers());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load resellers.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    load();
+    void load();
   }, []);
 
   const filtered = useMemo(() => {
@@ -36,18 +46,22 @@ export default function AdminResellersPage() {
       item.email,
       item.tel,
       item.mobile,
-    ].join(" ").toLowerCase().includes(term));
+    ].join(' ').toLowerCase().includes(term));
   }, [resellers, search]);
 
-  const handleDelete = (resellerId: string) => {
+  const handleDelete = async (resellerId: string) => {
     const reseller = resellers.find((item) => item.id === resellerId);
     if (!reseller) return;
 
     const confirmed = window.confirm(`Delete ${reseller.companyName} and all of its reseller pricing?`);
     if (!confirmed) return;
 
-    deleteReseller(resellerId);
-    load();
+    try {
+      await deleteReseller(resellerId);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to delete reseller.');
+    }
   };
 
   return (
@@ -57,14 +71,14 @@ export default function AdminResellersPage() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">Admin panel</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-900">Reseller management</h1>
           <p className="mt-4 max-w-3xl text-base text-zinc-600">
-            Add resellers, clone the default price template, and then fine-tune each reseller's own matrix.
+            Add resellers, clone the default price template on creation, and then fine-tune each reseller&apos;s own matrix from Cosmos-backed data.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate('/admin')}
             className="rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
           >
             Back to dashboard
@@ -88,12 +102,16 @@ export default function AdminResellersPage() {
           />
           <button
             type="button"
-            onClick={load}
+            onClick={() => void load()}
             className="rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
           >
             Refresh
           </button>
         </div>
+
+        {error ? (
+          <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        ) : null}
 
         <div className="mt-6 overflow-x-auto">
           <table className="min-w-full divide-y divide-zinc-200 text-left text-sm">
@@ -109,7 +127,11 @@ export default function AdminResellersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100">
-              {filtered.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td className="px-4 py-8 text-zinc-500" colSpan={7}>Loading resellers...</td>
+                </tr>
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td className="px-4 py-8 text-zinc-500" colSpan={7}>
                     No resellers match the current search.
@@ -120,24 +142,24 @@ export default function AdminResellersPage() {
                   <tr key={reseller.id} className="align-top">
                     <td className="px-4 py-4">
                       <div className="font-semibold text-zinc-900">{reseller.companyName}</div>
-                      <div className="mt-1 text-zinc-500">{reseller.businessAddress || "No address added"}</div>
+                      <div className="mt-1 text-zinc-500">{reseller.businessAddress || 'No address added'}</div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="font-medium text-zinc-900">{[reseller.firstName, reseller.lastName].filter(Boolean).join(" ") || "No contact"}</div>
-                      <div className="mt-1 text-zinc-500">{reseller.notes || "No notes"}</div>
+                      <div className="font-medium text-zinc-900">{[reseller.firstName, reseller.lastName].filter(Boolean).join(' ') || 'No contact'}</div>
+                      <div className="mt-1 text-zinc-500">{reseller.notes || 'No notes'}</div>
                     </td>
                     <td className="px-4 py-4 text-zinc-600">
-                      <div>{reseller.email || "No email"}</div>
-                      <div className="mt-1">Tel: {reseller.tel || "—"}</div>
-                      <div className="mt-1">Mobile: {reseller.mobile || "—"}</div>
+                      <div>{reseller.email || 'No email'}</div>
+                      <div className="mt-1">Tel: {reseller.tel || '—'}</div>
+                      <div className="mt-1">Mobile: {reseller.mobile || '—'}</div>
                     </td>
                     <td className="px-4 py-4 text-zinc-600">
                       <div>{reseller.sourceTemplateId}</div>
-                      <div className="mt-1">Pricing cloned: {reseller.pricingInitialized ? "Yes" : "No"}</div>
+                      <div className="mt-1">Pricing cloned: {reseller.pricingInitialized ? 'Yes' : 'No'}</div>
                     </td>
                     <td className="px-4 py-4 text-zinc-600">
-                      <div>{reseller.credentials.loginEnabled ? "Enabled" : "Disabled"}</div>
-                      <div className="mt-1">{reseller.credentials.loginEmail || "No login email"}</div>
+                      <div>{reseller.credentials.loginEnabled ? 'Enabled' : 'Disabled'}</div>
+                      <div className="mt-1">{reseller.credentials.loginEmail || 'No login email'}</div>
                     </td>
                     <td className="px-4 py-4 text-zinc-600">{formatDate(reseller.createdAt)}</td>
                     <td className="px-4 py-4">
@@ -156,7 +178,7 @@ export default function AdminResellersPage() {
                         </Link>
                         <button
                           type="button"
-                          onClick={() => handleDelete(reseller.id)}
+                          onClick={() => void handleDelete(reseller.id)}
                           className="inline-flex rounded-full border border-red-200 px-4 py-2 font-semibold text-red-700 transition hover:bg-red-50"
                         >
                           Delete
