@@ -217,7 +217,7 @@ export default function AdminResellerFormPage() {
         setNewPassword('');
         setConfirmPassword('');
         setCredentialNotice(newPassword
-          ? 'Reseller access details saved. Password hashing is still pending backend implementation.'
+          ? 'Reseller access details saved and password hashed.'
           : 'Reseller access updated.');
       }
 
@@ -356,7 +356,7 @@ export default function AdminResellerFormPage() {
               <div>
                 <h2 className="text-2xl font-semibold text-zinc-900">Reseller login access</h2>
                 <p className="mt-2 max-w-2xl text-sm text-zinc-600">
-                  Login enablement and login email are now saved through the backend. Password hashing is intentionally deferred for the next backend pass.
+                  Login enablement, login email, and password hashing are now saved through the backend. Passwords are stored as secure hashes before reseller auth records are synced to Cosmos.
                 </p>
               </div>
               <div className="rounded-2xl bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
@@ -377,7 +377,7 @@ export default function AdminResellerFormPage() {
                 <span>
                   <span className="block text-sm font-semibold text-zinc-900">Enable reseller login</span>
                   <span className="mt-1 block text-sm text-zinc-600">
-                    When enabled, this reseller can sign in via the reseller login page once password hashing is added on the backend.
+                    When enabled, this reseller can sign in via the reseller login page after a password has been set.
                   </span>
                 </span>
               </label>
@@ -396,7 +396,7 @@ export default function AdminResellerFormPage() {
                 <div className="rounded-2xl border border-dashed border-zinc-200 px-4 py-4 text-sm text-zinc-600">
                   {isLoadingCredentials
                     ? 'Loading backend credential status...'
-                    : 'Password fields are kept here for the next backend step. They are validated now, but hashing and storage are still deferred.'}
+                    : 'Passwords entered here are hashed by the backend before the reseller login record is stored in Cosmos.'}
                 </div>
 
                 <Field label={isEditing ? 'Set New Password' : 'Initial Password'}>

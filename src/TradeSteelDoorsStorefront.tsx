@@ -57,7 +57,8 @@ export default function TradeSteelDoorsStorefront() {
                 <Route path="/resell/login" element={<ResellerLoginPage />} />
                 <Route element={<ResellerRoute />}>
                   <Route element={<SiteShell />}>
-                    <Route path="/resell" element={<div>Reseller dashboard</div>} />
+                    <Route path="/resell" element={<AdminDashboardPage />} />
+                    <Route path="/resell/orders/:orderNumber" element={<AdminOrderDetailPage />} />
                   </Route>
                 </Route>
               </Routes>

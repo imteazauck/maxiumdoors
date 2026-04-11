@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { fetchOrder, takePayment } from "../admin/api";
 import { clearAuthSession } from "../admin/session";
+import { useAuth } from "../context/AuthContext";
 import type { AdminOrder } from "../admin/types";
 
 function formatMoney(value?: number) {
@@ -22,6 +23,8 @@ function formatDate(value?: string) {
 export default function AdminOrderDetailPage() {
   const { orderNumber = "" } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const loginPath = user?.role === "reseller" ? "/resell/login" : "/admin/login";
   const [order, setOrder] = useState<AdminOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,7 +51,7 @@ export default function AdminOrderDetailPage() {
         setError(message);
         if (message.includes("sign in again")) {
           clearAuthSession();
-          navigate("/admin/login", { replace: true });
+          navigate(loginPath, { replace: true });
         }
       } finally {
         setLoading(false);
@@ -124,7 +127,7 @@ export default function AdminOrderDetailPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <Link
-            to="/admin"
+            to={user?.role === "reseller" ? "/resell" : "/admin"}
             className="text-sm font-semibold text-zinc-500 hover:text-zinc-900"
           >
             ← Back to admin list
